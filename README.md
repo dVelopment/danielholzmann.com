@@ -35,7 +35,7 @@ Create your resume in a few minutes with this totally responsive starter using R
 
     ```sh
     cd my-default-starter/
-    npm run develop
+    bun run develop
     ```
 
 1.  **Open the source code and start editing!**
@@ -50,7 +50,7 @@ Create your resume in a few minutes with this totally responsive starter using R
 
   That command will generate a production build on _public_ folder
   ```sh
-    npm run build
+    bun run build
   ```
 
 ## Configuration

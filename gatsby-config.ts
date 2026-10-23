@@ -108,7 +108,6 @@ const config: GatsbyConfig = {
       },
     },
     "gatsby-plugin-sitemap",
-    "gatsby-plugin-netlify",
     {
       resolve: "gatsby-plugin-google-gtag",
       options: {
