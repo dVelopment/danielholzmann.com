@@ -63,7 +63,7 @@ const siteConfig: SiteConfig = {
       description: "Consultant/Technical lead as a freelancer.",
     },
     {
-      company: "d.velopment.at",
+      company: "danielholzmann.com",
       begin: { month: "Feb", year: "2006" },
       duration: null,
       occupation: "CEO",

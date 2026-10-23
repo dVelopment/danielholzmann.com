@@ -9,7 +9,7 @@ Personal portfolio website for Daniel Holzmann (danielholzmann.com). A single-pa
 - **Framework**: Gatsby v5.16+ (React-based static site generator)
 - **UI**: React 18, styled-components 6
 - **Data**: GitHub GraphQL API for repository display
-- **Deployment**: Dokploy with Nixpacks; it detects Bun from `bun.lock` and runs `bun run build`
+- **Deployment**: Dokploy with Nixpacks; it detects Bun from `bun.lock` and runs `bun run build`. `nixpacks.toml` overrides the install phase with `npx bun@1.4.2 install --frozen-lockfile` because Nixpacks' bundled bun (1.2.10) can't parse `bun.lock` v2; bump that pin when upgrading local bun. Preview deployments have their own environment settings in Dokploy and need `GITHUB_TOKEN` set there too
 - **Package manager**: Bun (`bun.lock`; npm is not used)
 - **Node version**: 22 (see `.nvmrc`; provided by `devenv.nix`). Gatsby still runs on Node; Bun only installs and runs scripts
 
