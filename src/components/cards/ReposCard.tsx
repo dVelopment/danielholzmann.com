@@ -7,9 +7,7 @@ interface Repository {
   name: string;
   url: string;
   description: string | null;
-  stargazers: {
-    totalCount: number;
-  };
+  stargazerCount: number;
   primaryLanguage?: {
     name: string;
     color: string;
@@ -36,9 +34,7 @@ const ReposCard: React.FC = () => {
                     name
                     url
                     description
-                    stargazers {
-                      totalCount
-                    }
+                    stargazerCount
                     primaryLanguage {
                       name
                       color
@@ -95,7 +91,7 @@ const ReposCard: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-1 text-xs text-ghost flex-shrink-0">
                   <span className="text-signal">★</span>
-                  {repo.stargazers.totalCount}
+                  {repo.stargazerCount}
                 </div>
               </div>
               {repo.primaryLanguage && (

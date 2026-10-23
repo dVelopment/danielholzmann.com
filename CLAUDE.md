@@ -58,7 +58,10 @@ Requires `GITHUB_TOKEN` for GitHub API access. Declared in `secretspec.toml`, re
 ```bash
 secretspec run -- npm run develop
 secretspec run -- npm run build
+npm run serve   # serves public/ on localhost:9000, no token needed
 ```
+
+The token is a fine-grained PAT. If it can't read the pinned repositories, `stargazers` returns `FORBIDDEN` and the build fails; "Repository access: Public repositories" (read-only) should cover it.
 
 `gatsby-config.ts` still loads `.env.${NODE_ENV}` via dotenv as a fallback; Netlify provides `GITHUB_TOKEN` from its own environment settings.
 
