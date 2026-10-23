@@ -80,3 +80,7 @@ devenv.local.yaml
 
 # pre-commit
 .pre-commit-config.yaml
+
+# MemPalace per-project files (issue #185)
+mempalace.yaml
+entities.json
