@@ -70,7 +70,7 @@ export default IndexPage;
 
 export const Head: HeadFC = () => (
   <SEO
-    title="Full-Stack Developer"
-    description="Portfolio of Daniel Holzmann, a full-stack JavaScript engineer with 18+ years of experience building web applications."
+    title="Full-Stack Developer & AI Engineer"
+    description="Portfolio of Daniel Holzmann, a full-stack developer and AI engineer building production-grade AI agents and agentic workflows on 20+ years of software engineering experience."
   />
 );

@@ -29,7 +29,9 @@ const AboutCard: React.FC = () => {
           <h2 className="font-mono text-lg md:text-xl font-bold text-white mb-1">
             <span className="text-matrix">&gt;</span> {siteConfig.authorName}
           </h2>
-          <p className="font-mono text-sm text-ghost">Full-Stack Developer</p>
+          <p className="font-mono text-sm text-ghost">
+            Full-Stack Developer &amp; AI Engineer
+          </p>
           <p className="font-mono text-xs text-steel mt-1">
             // available for work
           </p>

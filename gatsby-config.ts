@@ -67,7 +67,7 @@ const createGitHubSchema = async () => {
 const config: GatsbyConfig = {
   siteMetadata: {
     title: "Hi! I'm Daniel!",
-    description: "I'm Daniel and I'm a full-stack JavaScript engineer!",
+    description: "I'm Daniel, a full-stack developer and AI engineer!",
     author: "Daniel Holzmann",
     siteUrl: "https://danielholzmann.com",
   },
@@ -98,7 +98,7 @@ const config: GatsbyConfig = {
     {
       resolve: "gatsby-plugin-manifest",
       options: {
-        name: "Daniel Holzmann - Full-Stack Developer",
+        name: "Daniel Holzmann - Full-Stack Developer & AI Engineer",
         short_name: "Daniel H.",
         start_url: "/",
         background_color: "#0A0A0F",

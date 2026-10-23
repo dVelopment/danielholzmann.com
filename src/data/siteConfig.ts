@@ -2,23 +2,31 @@ import type { SiteConfig } from "../types/siteConfig";
 
 const siteConfig: SiteConfig = {
   siteTitle: "Hi! I'm Daniel!",
-  siteDescription: "I'm Daniel and I'm a full-stack JavaScript engineer!",
-  keyWords: ["daniel holzmann", "web developer", "developer"],
+  siteDescription: "I'm Daniel, a full-stack developer and AI engineer!",
+  keyWords: [
+    "daniel holzmann",
+    "ai engineer",
+    "ai agents",
+    "agentic workflows",
+    "full-stack developer",
+  ],
   authorName: "Daniel Holzmann",
   twitterUsername: "",
   githubUsername: "dVelopment",
   authorAvatar: "/images/avatar.jpg",
-  authorDescription: `Developer, web enthusiast, engineering leader.<br />
+  authorDescription: `Developer, AI engineer, engineering leader.<br />
   I started coding for fun as a teenager. As an adult, it grew into finally being my main occupation.<br />
   At age 30, after years of experience and autodidact training, I started studying
   <strong>Software Engineering</strong> at the <strong>University of Applied Sciences Upper Austria in Hagenberg</strong>.<br />
-  I have years of experience leading engineering teams and now work with <strong>JavaScript, TypeScript, Rust, and Solid.js/React</strong>.`,
+  I have 10+ years of experience leading engineering teams. Today I build <strong>production-grade AI agents and agentic workflows</strong>,
+  and I use AI in my own engineering work, backed by more than two decades of hands-on software engineering.<br />
+  I work with <strong>TypeScript, Rust, Solid.js/React, and LLMs</strong>.`,
   skills: [
+    { name: "AI Agents", level: 90 },
     { name: "JavaScript", level: 95 },
     { name: "Node.js", level: 95 },
     { name: "Rust", level: 90 },
-    { name: "HTML", level: 90 },
-    { name: "CSS", level: 90 },
+    { name: "Agentic Workflows", level: 90 },
     { name: "Solid.js", level: 85 },
     { name: "React", level: 80 },
     { name: "Git", level: 80 },
@@ -30,7 +38,7 @@ const siteConfig: SiteConfig = {
       duration: null,
       occupation: "Head of Engineering",
       description:
-        "Leading engineering efforts and building AI-powered solutions.",
+        "Leading engineering and building production-grade AI agents and agentic workflows.",
     },
     {
       company: "Bond Vet",

@@ -43,7 +43,7 @@ const Hero: React.FC = () => {
             transition={{ delay: 0.3, duration: 0.6 }}
             className="font-mono text-lg md:text-xl text-ghost"
           >
-            Full-Stack Developer
+            Full-Stack Developer &amp; AI Engineer
           </motion.p>
 
           {/* Code-style tagline */}
@@ -56,7 +56,7 @@ const Hero: React.FC = () => {
             <span className="text-ghost">const</span>{" "}
             <span className="text-cyber">passion</span>{" "}
             <span className="text-ghost">=</span>{" "}
-            <span className="text-matrix">"Building the web"</span>
+            <span className="text-matrix">"Shipping AI agents to production"</span>
             <span className="text-ghost">;</span>
           </motion.div>
         </motion.div>
