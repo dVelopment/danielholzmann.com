@@ -15,11 +15,14 @@ const githubHeaders = {
   Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
 };
 
-// GitHub's schema exposes Apollo Federation's `union _Entity` (which includes
-// `Query`) via `Query._entities`. Gatsby's third-party schema merge only
-// special-cases `Query.relay`, so the union drags GitHub's `Query` in as a
-// second type named "Query" and schema building fails. Drop both before the
-// schema is built.
+// GitHub's schema references its root `Query` type from places other than
+// `Query.relay`, which is the only one Gatsby's third-party schema merge
+// special-cases:
+// - Apollo Federation's `union _Entity` (which includes `Query`) via
+//   `Query._entities`;
+// - `Query` implements `interface Node`, so it is one of Node's possible types.
+// Either path drags GitHub's `Query` in as a second type named "Query" and
+// schema building fails. Cut those references before the schema is built.
 const createGitHubSchema = async () => {
   const response = await fetch(GITHUB_GRAPHQL_URL, {
     method: "POST",
@@ -39,14 +42,24 @@ const createGitHubSchema = async () => {
   const queryTypeName = data.__schema.queryType.name;
   const types = data.__schema.types
     .filter((type) => type.name !== "_Entity")
-    .map((type) =>
-      type.kind === "OBJECT" && type.name === queryTypeName
-        ? {
-            ...type,
-            fields: type.fields.filter((field) => field.name !== "_entities"),
-          }
-        : type,
-    );
+    .map((type) => {
+      if (type.kind === "OBJECT" && type.name === queryTypeName) {
+        return {
+          ...type,
+          fields: type.fields.filter((field) => field.name !== "_entities"),
+          interfaces: [],
+        };
+      }
+      if (type.kind === "INTERFACE") {
+        return {
+          ...type,
+          possibleTypes: type.possibleTypes.filter(
+            (possible) => possible.name !== queryTypeName,
+          ),
+        };
+      }
+      return type;
+    });
 
   return buildClientSchema({ __schema: { ...data.__schema, types } });
 };

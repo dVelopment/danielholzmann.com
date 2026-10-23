@@ -53,13 +53,15 @@ All site content is configured in `data/siteConfig.js`:
 
 ## Environment Variables
 
-Requires `GITHUB_TOKEN` for GitHub API access. Declared in `secretspec.toml`, resolved from 1Password (`my.1password.com`, vault `Freelancing`, item `GITHUB_TOKEN for danielholzmann.com`). Inside `devenv shell`, inject it at runtime:
+Requires `GITHUB_TOKEN` for GitHub API access. Declared in `secretspec.toml`, resolved from 1Password (`my.1password.com`, vault `Freelancing`, item `GITHUB_TOKEN for danielholzmann.com`). The devenv secretspec integration (`devenv.yaml` → `secretspec`) resolves it on shell entry and `devenv.nix` exports it, so it is set everywhere inside `devenv shell`:
 
 ```bash
-secretspec run -- npm run develop
-secretspec run -- npm run build
+devenv shell -- npm run develop
+devenv shell -- npm run build
 npm run serve   # serves public/ on localhost:9000, no token needed
 ```
+
+Agents must set `SECRETSPEC_REASON="<why>"` (secretspec's `require_reason` policy). The resolved token is written in plaintext to the gitignored `.devenv/shell-*.sh` cache.
 
 The token is a fine-grained PAT. If it can't read the pinned repositories, `stargazers` returns `FORBIDDEN` and the build fails; "Repository access: Public repositories" (read-only) should cover it.
 
