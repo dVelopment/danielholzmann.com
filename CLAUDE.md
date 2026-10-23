@@ -10,7 +10,7 @@ Personal portfolio website for Daniel Holzmann (danielholzmann.com). A single-pa
 - **UI**: React 18, styled-components 6
 - **Data**: GitHub GraphQL API for repository display
 - **Deployment**: Netlify (see `_redirects`, `gatsby-plugin-netlify`)
-- **Node version**: 24+ (see `.nvmrc`)
+- **Node version**: 22 (see `.nvmrc`; provided by `devenv.nix`)
 
 ## Commands
 
