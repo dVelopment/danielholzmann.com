@@ -21,3 +21,9 @@ nixpkgs:
 # If you have more than one devenv you can merge them
 #imports:
 # - ./backend
+
+# Resolve secrets declared in secretspec.toml (provider routes come from there)
+# so devenv.nix can export them; see devenv.nix.
+secretspec:
+  enable: true
+  profile: default
