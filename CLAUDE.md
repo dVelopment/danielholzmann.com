@@ -53,7 +53,14 @@ All site content is configured in `data/siteConfig.js`:
 
 ## Environment Variables
 
-Requires `GITHUB_TOKEN` in `.env.development` / `.env.production` for GitHub API access.
+Requires `GITHUB_TOKEN` for GitHub API access. Declared in `secretspec.toml`, resolved from 1Password (`my.1password.com`, vault `Freelancing`, item `GITHUB_TOKEN for danielholzmann.com`). Inside `devenv shell`, inject it at runtime:
+
+```bash
+secretspec run -- npm run develop
+secretspec run -- npm run build
+```
+
+`gatsby-config.ts` still loads `.env.${NODE_ENV}` via dotenv as a fallback; Netlify provides `GITHUB_TOKEN` from its own environment settings.
 
 ## Developer Context
 

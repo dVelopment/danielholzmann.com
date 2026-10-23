@@ -2,7 +2,10 @@
 
 {
   # https://devenv.sh/packages/
-  packages = [ pkgs.git ];
+  packages = [
+    pkgs.git
+    pkgs._1password-cli
+  ];
 
   # https://devenv.sh/languages/javascript/
   languages.javascript = {
