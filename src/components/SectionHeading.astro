@@ -1,15 +1,17 @@
 ---
-/** Section heading in the designs' `## …` style; the slot is the text after `## `. */
+/** Section heading as a terminal prompt (`## ` by default) followed by the slot. */
 interface Props {
   id?: string;
+  /** Text before the slot; defaults to `## `, e.g. `$ ` for a shell command heading. */
+  prompt?: string;
 }
 
-const { id } = Astro.props;
+const { id, prompt = "## " } = Astro.props;
 ---
 
 <h2
   id={id}
   class="text-sm font-medium text-accent print:font-mono print:text-xs print:font-bold print:text-print-accent"
 >
-  ## <slot />
+  {prompt}<slot />
 </h2>

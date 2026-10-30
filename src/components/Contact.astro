@@ -1,0 +1,20 @@
+---
+import { profile, social } from "../data/profile";
+import SectionHeading from "./SectionHeading.astro";
+
+const links = [
+  { href: social.github, label: "./github" },
+  { href: social.linkedin, label: "./linkedin" },
+  { href: social.mastodon, label: "./mastodon" },
+];
+---
+
+<section id="contact" aria-labelledby="contact-h" class="flex flex-col gap-6 py-24">
+  <SectionHeading id="contact-h">connect</SectionHeading>
+  <a href={`mailto:${profile.email}`} class="text-[clamp(24px,3.4vw,44px)] font-bold text-fg-strong">
+    {profile.email}<span aria-hidden="true" class="text-accent">_</span>
+  </a>
+  <nav aria-label="Social" class="flex flex-wrap gap-6 text-[15px]">
+    {links.map(({ href, label }) => <a href={href} class="underline">{label}</a>)}
+  </nav>
+</section>

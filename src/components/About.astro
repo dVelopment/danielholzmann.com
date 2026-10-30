@@ -1,0 +1,16 @@
+---
+import { leadershipYears } from "../data/skills";
+import SectionHeading from "./SectionHeading.astro";
+---
+
+<section id="about" aria-labelledby="about-h" class="flex flex-col gap-6 pt-24">
+  <SectionHeading id="about-h">about</SectionHeading>
+  <div class="flex max-w-[760px] flex-col gap-4 font-sans text-[19px] leading-[1.65] text-prose">
+    <p>
+      I started coding for fun as a teenager — it grew into my main occupation. At 30, after years of autodidact training, I studied Software Engineering at the University of Applied Sciences Upper Austria in Hagenberg.
+    </p>
+    <p>
+      {leadershipYears}+ years of leading and supporting engineering teams. Today I build AI agents for production and work hands-on with coding agents in agentic development workflows.
+    </p>
+  </div>
+</section>

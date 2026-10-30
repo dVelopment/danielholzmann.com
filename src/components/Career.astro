@@ -1,0 +1,32 @@
+---
+import { currentJob, jobs } from "../data/jobs";
+import { durationLabel, formatMonth } from "../lib/experience";
+import SectionHeading from "./SectionHeading.astro";
+---
+
+<section id="work" aria-labelledby="work-h" class="flex flex-col gap-6 pt-24">
+  <SectionHeading id="work-h">git log --career</SectionHeading>
+  {/* role="list": WebKit drops list semantics from unstyled lists. */}
+  <ol role="list" class="flex flex-col border-l border-line">
+    {
+      jobs.map((job) => (
+        <li class="relative pb-8 pl-7 last:pb-0">
+          <span
+            aria-hidden="true"
+            class:list={[
+              "absolute top-1.5 -left-[5px] size-[9px] rounded-full",
+              job === currentJob ? "bg-accent" : "bg-line-strong",
+            ]}
+          />
+          <p class="text-xs text-muted">
+            {formatMonth(job.start)} — {job.end ? durationLabel(job.start, job.end) : "present"}
+          </p>
+          <h3 class="mt-1.5 mb-1 text-[20px] font-bold text-fg-strong">
+            {job.role} · {job.company}
+          </h3>
+          <p class="font-sans text-[16px] text-prose-muted">{job.summary}</p>
+        </li>
+      ))
+    }
+  </ol>
+</section>
