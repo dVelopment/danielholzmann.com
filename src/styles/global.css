@@ -26,6 +26,10 @@
 
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   --font-sans: Inter, system-ui, sans-serif;
+
+  /* Small sizes get the screen design's browser-default line height; the print override is in base. */
+  --text-xs--line-height: normal;
+  --text-sm--line-height: normal;
 }
 
 @page {
@@ -39,8 +43,16 @@
     -webkit-print-color-adjust: exact;
   }
 
+  @media print {
+    :root {
+      --text-xs--line-height: 1.5;
+      --text-sm--line-height: 1.5;
+    }
+  }
+
+  /* Screen design: browser-default line height. Print design: 1.5 (small sizes via the :root override above). */
   body {
-    @apply bg-background font-mono text-fg print:bg-white print:font-sans print:text-ink;
+    @apply bg-background font-mono leading-[normal] text-fg print:bg-white print:font-sans print:leading-normal print:text-ink;
   }
 
   a {

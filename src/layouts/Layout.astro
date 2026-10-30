@@ -62,7 +62,8 @@ const ogImageUrl = new URL(ogImage.src, Astro.site);
     />
   </head>
   <body>
-    <div class="mx-auto min-h-screen max-w-[1120px] px-[clamp(16px,4vw,48px)]">
+    {/* content-box: as in the design, the 1120px max width excludes the side padding. */}
+    <div class="mx-auto box-content min-h-screen max-w-[1120px] px-[clamp(16px,4vw,48px)]">
       <slot />
     </div>
   </body>

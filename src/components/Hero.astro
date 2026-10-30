@@ -1,0 +1,19 @@
+---
+import { careerYears, currentJob } from "../data/jobs";
+import { profile } from "../data/profile";
+---
+
+<section id="top" class="flex flex-col gap-7 pt-[clamp(56px,9vw,120px)] pb-[clamp(56px,8vw,100px)]">
+  <p class="text-sm text-muted">$ whoami</p>
+  <h1 class="text-[clamp(44px,7vw,96px)] leading-none font-bold tracking-[-0.03em] text-fg-strong">
+    {profile.name}
+  </h1>
+  <p class="max-w-[680px] font-sans text-[clamp(18px,1.8vw,24px)] leading-normal text-prose-muted">
+    {profile.title}. I build production-grade AI agents and ship software with agentic development workflows — coding agents, backed by {careerYears}+ years of hands-on software engineering.
+  </p>
+  <div class="flex flex-wrap gap-3 text-[13px]">
+    <span class="rounded-md border border-line px-3 py-2">location: {profile.location}</span>
+    <span class="rounded-md border border-line px-3 py-2">exp: {careerYears}+ years</span>
+    <span class="rounded-md border border-line px-3 py-2 text-accent">now: {currentJob.role} @ {currentJob.company}</span>
+  </div>
+</section>

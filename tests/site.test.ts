@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { monthOf, yearsSince } from '../src/lib/experience';
 import { profile, social } from '../src/data/profile';
 
 // Builds the real site once and checks what browsers, crawlers and link previews get.
@@ -16,6 +17,8 @@ const TEXT_SELECTORS = [
   'main',
   'main a[href="/"]',
   '#requested-path',
+  '#top',
+  'footer',
 ];
 
 let outDir: string;
@@ -192,6 +195,27 @@ describe('start page', () => {
 
   test('section headings use the design’s "## " prefix', () => {
     expect(home.text.h2).toBe('## status');
+  });
+
+  test('hero and footer count up to the build month', () => {
+    const now = new Date();
+    // Career starts with the earliest job (Feb 2006); the current role is the latest ongoing one.
+    const years = yearsSince({ year: 2006, month: 2 }, monthOf(now));
+    // Compressed HTML drops whitespace between blocks, so check each block's text.
+    for (const text of [
+      `backed by ${years}+ years of hands-on software engineering.`,
+      `exp: ${years}+ years`,
+      'now: Head of Engineering @ Sitelevel.ai',
+    ])
+      expect(home.text['#top']).toContain(text);
+    expect(meta(home, 'description')).toContain(`${years}+ years`);
+    expect(home.text.footer).toBe(`daniel@portfolio:~$ © ${monthOf(now).year}`);
+  });
+
+  test('the first link skips to the main landmark', () => {
+    const body = home.html.slice(home.html.indexOf('<body'));
+    expect(body.match(/<a [^>]*href="([^"]*)"/)?.[1]).toBe('#main');
+    expect(body).toMatch(/<main [^>]*id="main"/);
   });
 
   test('ships no JavaScript', () => {

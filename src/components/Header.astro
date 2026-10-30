@@ -1,0 +1,22 @@
+---
+/** Skip link (first focus stop), logo and main nav. The page must have `<main id="main">`. */
+const nav = [
+  { href: "#about", label: "./about" },
+  { href: "#work", label: "./experience" },
+  { href: "#contact", label: "./contact" },
+  { href: "#cv", label: "./cv" },
+];
+---
+
+<a
+  href="#main"
+  class="sr-only text-sm focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-10 focus:rounded-md focus:border focus:border-accent focus:bg-surface focus:px-3 focus:py-2"
+>
+  skip to content
+</a>
+<header class="flex flex-wrap items-center justify-between gap-4 py-6 text-sm">
+  <a href="#top" class="text-fg">~/daniel<span class="text-accent">_</span></a>
+  <nav aria-label="Main" class="flex flex-wrap gap-6">
+    {nav.map(({ href, label }) => <a href={href}>{label}</a>)}
+  </nav>
+</header>

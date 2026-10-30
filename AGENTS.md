@@ -22,15 +22,16 @@ bun run dev              # Dev server (localhost:4321)
 bun run build            # Production build into dist/
 bun run serve            # Preview dist/ on localhost:4321
 bun run typecheck        # astro sync + tsc over .ts and .astro
-bun test                 # Builds the site and checks the output
+bun test                 # Unit-tests the experience math, builds the site and checks the output
 bunx prettier --write .  # Format .ts/.json/.md/.css (`.prettierrc`; not a dependency; no Astro plugin, so .astro files are formatted by hand)
 ```
 
 ## Layout
 
 - `src/layouts/Layout.astro`: document shell and the full head (SEO, Open Graph/Twitter, `rel="me"`, icons, manifest, fonts)
-- `src/components/`: page sections; `SectionHeading.astro` renders the designs' `## …` headings
+- `src/components/`: one component per page section; `SectionHeading.astro` renders the designs' `## …` headings
 - `src/pages/`: `index.astro` (start page) and `404.astro`
-- `src/data/profile.ts`: site identity and social links
+- `src/data/`: typed content. `profile.ts` (identity, social links, education, languages), `jobs.ts` (career, plus derived `currentJob` and `careerYears`), `skills.ts` (start month, CV/radar names, featured flag), `build.ts` (the build month in Vienna time, which every number counts up to). Store start/end months only; no year count is ever typed by hand
+- `src/lib/experience.ts`: pure month math (`yearsSince`, `yearsLabel`, `durationLabel`, month formats). A `Month` is `{ year, month }` (month 1–12) or a bare year meaning January
 - `src/images/`: images processed by Astro's image pipeline (avatar)
 - `public/`: static files served as-is (favicon, touch icon, manifest icons, `manifest.webmanifest`)
