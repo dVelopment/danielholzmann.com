@@ -1,22 +1,22 @@
 ---
+import About from "../components/About.astro";
+import Career from "../components/Career.astro";
+import Contact from "../components/Contact.astro";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import Hero from "../components/Hero.astro";
-import SectionHeading from "../components/SectionHeading.astro";
+import PrintCv from "../components/PrintCv.astro";
 import Layout from "../layouts/Layout.astro";
-import { social } from "../data/profile";
 ---
 
 <Layout>
   <Header />
   <main id="main">
     <Hero />
-    <section aria-labelledby="status-h" class="flex flex-col gap-6 pb-24">
-      <SectionHeading id="status-h">status</SectionHeading>
-      <p class="max-w-[760px] font-sans text-[19px] leading-[1.65] text-prose">
-        The new site is being rebuilt. Meanwhile, find me on <a href={social.github}>GitHub</a> or <a href={social.linkedin}>LinkedIn</a>.
-      </p>
-    </section>
+    <About />
+    <Career />
+    <PrintCv />
+    <Contact />
   </main>
   <Footer />
 </Layout>

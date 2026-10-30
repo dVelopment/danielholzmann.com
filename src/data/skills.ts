@@ -1,4 +1,5 @@
-import type { Month } from '../lib/experience';
+import { type Month, yearsSince } from '../lib/experience';
+import { buildMonth } from './build';
 
 export interface Skill {
   name: string;
@@ -11,6 +12,13 @@ export interface Skill {
   /** Focus skills, listed first on the printed CV. */
   featured?: boolean;
 }
+
+const leadership: Skill = {
+  name: 'Engineering leadership',
+  radarLabel: ['Engineering', 'leadership'],
+  start: 2015,
+  featured: true,
+};
 
 /** Radar axis order, clockwise from the top, and the order of the screen list. */
 export const skills: readonly Skill[] = [
@@ -27,10 +35,8 @@ export const skills: readonly Skill[] = [
     start: { year: 2025, month: 5 },
     featured: true,
   },
-  {
-    name: 'Engineering leadership',
-    radarLabel: ['Engineering', 'leadership'],
-    start: 2015,
-    featured: true,
-  },
+  leadership,
 ];
+
+/** Full years of leading teams, as in the about text ("N+ years"). */
+export const leadershipYears = yearsSince(leadership.start, buildMonth);

@@ -60,6 +60,9 @@ const ogImageUrl = new URL(ogImage.src, Astro.site);
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap"
     />
+
+    {/* Elements marked `data-js-only` need JavaScript and are hidden when it is off. */}
+    <noscript><style is:inline>[data-js-only]{display:none}</style></noscript>
   </head>
   <body>
     {/* content-box: as in the design, the 1120px max width excludes the side padding. */}

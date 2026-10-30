@@ -1,0 +1,39 @@
+---
+/** Print callout. `data-js-only`: Layout's `<noscript>` rule hides the button without JavaScript. */
+import SectionHeading from "./SectionHeading.astro";
+---
+
+<section
+  id="cv"
+  aria-labelledby="cv-h"
+  class="mt-24 flex flex-wrap items-center justify-between gap-6 rounded-[10px] border border-dashed border-line-strong p-[clamp(20px,3vw,32px)]"
+>
+  <div class="flex flex-[1_1_420px] flex-col gap-2.5">
+    <SectionHeading id="cv-h" prompt="$ ">print --format=cv</SectionHeading>
+    <p class="font-sans text-[17px] leading-[1.6] text-prose">
+      Need a classic CV for HR? Just print this page — a print stylesheet recompiles it into a one-page résumé. No PDF to download: the PDF is a build artifact.
+    </p>
+  </div>
+  <button
+    type="button"
+    onclick="window.print()"
+    data-js-only
+    class="inline-flex min-h-12 cursor-pointer items-center gap-2.5 rounded-lg border border-accent px-5 text-[15px] text-accent"
+  >
+    <svg
+      aria-hidden="true"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      class="fill-none stroke-current"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M6 9V3h12v6"></path>
+      <rect x="3" y="9" width="18" height="8" rx="2"></rect>
+      <path d="M6 14h12v7H6z"></path>
+    </svg>
+    ./print-cv
+  </button>
+</section>
