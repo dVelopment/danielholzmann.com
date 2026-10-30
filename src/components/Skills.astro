@@ -1,6 +1,6 @@
 ---
 import { buildMonth } from "../data/build";
-import { DETAIL_CAP, skills } from "../data/skills";
+import { DETAIL_CAP, listSkills, skills } from "../data/skills";
 import { cappedYears, yearsLabel, yearsSince } from "../lib/experience";
 import { points, radar, RADAR_CENTER, RADAR_RINGS } from "../lib/radar";
 import SectionHeading from "./SectionHeading.astro";
@@ -14,6 +14,11 @@ const chart = radar(items);
 const ariaLabel = `Skill radar, years of experience capped at ${RADAR_RINGS}+: ${items
   .map(({ name, years }) => `${name} ${cappedYears(years, RADAR_RINGS)}`)
   .join(", ")}`;
+/** List rows keep their radar index, so data-skill still pairs each row with its axis. */
+const rows = listSkills.map((skill) => {
+  const index = skills.indexOf(skill);
+  return { ...items[index], index };
+});
 ---
 
 {/* data-skill ties each skill's list item, radar label, spoke and dot together for SkillsHighlight.astro. */}
@@ -57,8 +62,8 @@ const ariaLabel = `Skill radar, years of experience capped at ${RADAR_RINGS}+: $
     {/* role="list": WebKit drops list semantics from unstyled lists. */}
     <ul role="list" class="flex flex-[2_1_280px] flex-col gap-3.5">
       {
-        items.map(({ name, years }, i) => (
-          <li tabindex="0" data-skill={i} class="group flex flex-col gap-1.5">
+        rows.map(({ name, years, index }) => (
+          <li tabindex="0" data-skill={index} class="group flex flex-col gap-1.5">
             <div class="flex justify-between gap-3 text-[13px]">
               <span class="text-fg">{name}</span>
               {/* Both values share one grid cell; screen readers get the detailed one only. */}

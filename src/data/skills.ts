@@ -20,22 +20,33 @@ const leadership: Skill = {
   featured: true,
 };
 
-/** Radar axis order, clockwise from the top, and the order of the screen list. */
+const aiAgents: Skill = { name: 'AI agents', start: 2024, featured: true };
+
+const agentic: Skill = {
+  name: 'Agentic development workflows',
+  cvName: 'Agentic dev workflows',
+  radarLabel: ['Agentic development', 'workflows'],
+  start: { year: 2025, month: 5 },
+  featured: true,
+};
+
+/** Radar axis order, clockwise from the top; chosen so every label fits the design's radar. */
 export const skills: readonly Skill[] = [
   { name: 'JavaScript / TypeScript', start: 2016, featured: true },
   { name: 'Node.js', start: 2012 },
   { name: 'React', start: 2016 },
   { name: 'Solid.js', start: 2025 },
   { name: 'Rust', start: 2024, featured: true },
-  { name: 'AI agents', start: 2024, featured: true },
-  {
-    name: 'Agentic development workflows',
-    cvName: 'Agentic dev workflows',
-    radarLabel: ['Agentic development', 'workflows'],
-    start: { year: 2025, month: 5 },
-    featured: true,
-  },
+  aiAgents,
+  agentic,
   leadership,
+];
+
+/** Screen list order: the AI skills lead, the rest follow the radar. */
+export const listSkills: readonly Skill[] = [
+  aiAgents,
+  agentic,
+  ...skills.filter((skill) => skill !== aiAgents && skill !== agentic),
 ];
 
 /** Full years of leading teams, as in the about text ("N+ years"). */

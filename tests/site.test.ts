@@ -337,7 +337,7 @@ describe('start page', () => {
     expect(targets.filter((id) => !ids.has(id))).toEqual([]);
   });
 
-  test('skills list the radar order with capped and detailed years for the build month', () => {
+  test('skills list the AI skills first, then the radar order, with capped and detailed years for the build month', () => {
     // Literal starts, so the test doesn't check the code against itself.
     const now = monthOf(new Date());
     const skillYears = (
@@ -352,13 +352,18 @@ describe('start page', () => {
         ['Engineering leadership', 2015],
       ] as [string, Month][]
     ).map(([name, start]) => [name, yearsSince(start, now)] as const);
+    // List order: AI agents and Agentic lead; the rest follow the radar.
+    const listOrder = [5, 6, 0, 1, 2, 3, 4, 7];
     expect(skillRows(home.html)).toEqual(
-      skillYears.map(([name, years]) => [
-        name,
-        yearsLabel(years, 5),
-        yearsLabel(years, 10),
-        `width: ${(Math.min(years, 5) / 5) * 100}%`,
-      ]),
+      listOrder.map((i) => {
+        const [name, years] = skillYears[i];
+        return [
+          name,
+          yearsLabel(years, 5),
+          yearsLabel(years, 10),
+          `width: ${(Math.min(years, 5) / 5) * 100}%`,
+        ];
+      }),
     );
     const [radarImage] = each(home.html, '#skills svg');
     expect(radarImage.attrs.role).toBe('img');
@@ -444,10 +449,28 @@ describe('start page', () => {
   });
 
   test('each skill’s list item, radar label, spoke and dot are linked by the head highlight rules', () => {
-    const indices = each(home.html, '#skills li').map(
-      (li) => li.attrs['data-skill'],
-    );
-    expect(indices).toEqual(['0', '1', '2', '3', '4', '5', '6', '7']);
+    const items = each(home.html, '#skills li');
+    const indices = items.map((li) => li.attrs['data-skill']);
+    expect(indices.toSorted()).toEqual([
+      '0',
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+    ]);
+    // Each list item pairs with the radar label of the same skill, whatever the list order.
+    const labels = each(home.html, '#skills svg text[data-skill]');
+    const names = skillRows(home.html).map(([name]) => name);
+    expect(
+      indices.map((i) =>
+        labels
+          .find((t) => t.attrs['data-skill'] === i)
+          ?.text.replace(/\s/g, ''),
+      ),
+    ).toEqual(names.map((name) => name.replace(/\s/g, '')));
     for (const i of indices)
       for (const tag of ['li', 'text', 'line', 'circle'])
         expect(
@@ -460,6 +483,7 @@ describe('start page', () => {
     // Hovering an item or label, or keyboard focus on an item (not a mouse click: :focus-visible),
     // lights that skill's label, spoke and dot and swaps its list item to the detail.
     const active = indices
+      .toSorted()
       .map(
         (i) =>
           `#skills:has(:is(li,text)[data-skill="${i}"]:is(:hover,:focus-visible)) [data-skill="${i}"]`,
@@ -547,13 +571,13 @@ describe('start page built at a later month', () => {
     ]);
     // Skills pass their caps at different months; between them the detail is exact. Bars and radar stop at 5.
     expect(skillRows(later.html)).toEqual([
+      ['AI agents', '5+ yrs', '5 yrs', 'width: 100%'],
+      ['Agentic development workflows', '4 yrs', '4 yrs', 'width: 80%'],
       ['JavaScript / TypeScript', '5+ yrs', '10+ yrs', 'width: 100%'],
       ['Node.js', '5+ yrs', '10+ yrs', 'width: 100%'],
       ['React', '5+ yrs', '10+ yrs', 'width: 100%'],
       ['Solid.js', '4 yrs', '4 yrs', 'width: 80%'],
       ['Rust', '5+ yrs', '5 yrs', 'width: 100%'],
-      ['AI agents', '5+ yrs', '5 yrs', 'width: 100%'],
-      ['Agentic development workflows', '4 yrs', '4 yrs', 'width: 80%'],
       ['Engineering leadership', '5+ yrs', '10+ yrs', 'width: 100%'],
     ]);
     // Vertices on ring 4 for Solid.js and Agentic, on the outer ring for the rest; dots on the vertices.
