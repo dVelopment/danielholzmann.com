@@ -1,28 +1,23 @@
-{ pkgs, config, ... }:
+{ pkgs, ... }:
 
 {
   # https://devenv.sh/packages/
+  # Bun is the only JS runtime (see bunfig.toml). No Node.
   packages = [
     pkgs.git
-    pkgs._1password-cli
+    pkgs.bun
   ];
 
-  # https://devenv.sh/languages/javascript/
-  # Bun is the package manager and script runner; Gatsby itself still runs on
-  # Node (its CLI shebang is `node`), so keep a Node runtime without npm.
-  languages.javascript = {
-    enable = true;
-    package = pkgs.nodejs-slim_22;
-    bun.enable = true;
-    bun.install.enable = true;
+  # https://devenv.sh/tasks/
+  tasks."site:install" = {
+    # Frozen: an older bun or a package.json/bun.lock drift errors instead of rewriting
+    # bun.lock. devenv reports the failed task (✖) but still opens the shell.
+    exec = "bun install --frozen-lockfile";
+    before = [ "devenv:enterShell" ];
   };
 
-  # From secretspec.toml via the devenv.yaml `secretspec` integration. Needed
-  # by gatsby-source-graphql (GitHub GraphQL API) at build/develop time.
-  env.GITHUB_TOKEN = config.secretspec.secrets.GITHUB_TOKEN or "";
-
-  # https://devenv.sh/processes/ — `devenv up` runs the Gatsby dev server.
-  processes.gatsby.exec = "bun run develop";
+  # https://devenv.sh/processes/ — `devenv up` runs the Astro dev server.
+  processes.astro.exec = "bun run dev";
 
   # See full reference at https://devenv.sh/reference/options/
 }

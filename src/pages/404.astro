@@ -1,0 +1,35 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="404 — page not found" description="This page does not exist." noindex>
+  <main class="flex flex-col gap-7 py-[clamp(56px,9vw,120px)]">
+    <p class="text-sm text-muted">
+      $ cd <span id="requested-path" class="text-fg">this-page</span>
+    </p>
+    <p
+      aria-hidden="true"
+      class="text-[clamp(96px,18vw,200px)] leading-none font-bold tracking-[-0.03em] text-fg-strong"
+    >
+      404
+    </p>
+    <h1 class="text-xl font-medium text-fg">
+      <span class="text-muted">error:</span> page_not_found
+    </h1>
+    <p class="max-w-[680px] font-sans text-lg leading-normal text-prose-muted">
+      Nothing lives at this path. It may have moved, or it never existed.
+    </p>
+    <p class="text-[15px]"><span class="text-muted">$</span> <a href="/">cd ~</a></p>
+  </main>
+  <script is:inline>
+    let path = location.pathname;
+    try {
+      // decodeURI keeps %2F, %3F and %23 encoded, so the shown path is the requested one.
+      path = decodeURI(path);
+    } catch (error) {
+      // Malformed percent-encoding: show the path as requested.
+      if (!(error instanceof URIError)) throw error;
+    }
+    document.getElementById("requested-path").textContent = path;
+  </script>
+</Layout>

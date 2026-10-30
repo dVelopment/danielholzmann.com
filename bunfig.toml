@@ -1,0 +1,3 @@
+# Run every `bun run` script on the Bun runtime, even CLIs with a `node` shebang (astro).
+[run]
+bun = true

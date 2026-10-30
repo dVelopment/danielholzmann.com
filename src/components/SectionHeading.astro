@@ -1,0 +1,15 @@
+---
+/** Section heading in the designs' `## …` style; the slot is the text after `## `. */
+interface Props {
+  id?: string;
+}
+
+const { id } = Astro.props;
+---
+
+<h2
+  id={id}
+  class="text-sm font-medium text-accent print:font-mono print:text-xs print:font-bold print:text-print-accent"
+>
+  ## <slot />
+</h2>
