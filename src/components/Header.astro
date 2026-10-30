@@ -10,11 +10,11 @@ const nav = [
 
 <a
   href="#main"
-  class="sr-only text-sm focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-10 focus:rounded-md focus:border focus:border-accent focus:bg-surface focus:px-3 focus:py-2"
+  class="sr-only text-sm focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-10 focus:rounded-md focus:border focus:border-accent focus:bg-surface focus:px-3 focus:py-2 print:hidden"
 >
   skip to content
 </a>
-<header class="flex flex-wrap items-center justify-between gap-4 py-6 text-sm">
+<header class="flex flex-wrap items-center justify-between gap-4 py-6 text-sm print:hidden">
   <a href="#top" class="text-fg">~/daniel<span class="text-accent">_</span></a>
   <nav aria-label="Main" class="flex flex-wrap gap-6">
     {nav.map(({ href, label }) => <a href={href}>{label}</a>)}

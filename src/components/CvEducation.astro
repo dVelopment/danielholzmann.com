@@ -1,0 +1,21 @@
+---
+/** Print-only education block of the CV; an unset period or degree leaves no placeholder. */
+import { education } from "../data/profile";
+import SectionHeading from "./SectionHeading.astro";
+---
+
+<section id="cv-education" class="hidden flex-col gap-2 print:flex">
+  <SectionHeading>education</SectionHeading>
+  {
+    education.map(({ title, school, period, degree }) => {
+      const detail = [period, degree].filter(Boolean).join(" · ");
+      return (
+        <>
+          <p class="font-semibold">{title}</p>
+          <p>{school}</p>
+          {detail && <p class="font-mono text-xs text-ink-muted">{detail}</p>}
+        </>
+      );
+    })
+  }
+</section>

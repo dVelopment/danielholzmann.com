@@ -37,6 +37,11 @@ export const social = {
   gravatar: 'https://gravatar.com/h2online',
 };
 
+/** A link as the printed CV shows it: `https://www.linkedin.com/in/x` → `linkedin.com/in/x`. */
+export function bareUrl(url: string): string {
+  return url.replace(/^https?:\/\/(www\.)?/, '');
+}
+
 export interface Education {
   title: string;
   school: string;

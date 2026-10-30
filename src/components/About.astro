@@ -1,16 +1,24 @@
 ---
+/** About on screen; the CV's profile paragraph in print. */
+import { careerYears } from "../data/jobs";
 import { leadershipYears } from "../data/skills";
 import SectionHeading from "./SectionHeading.astro";
+import TextPair from "./TextPair.astro";
 ---
 
-<section id="about" aria-labelledby="about-h" class="flex flex-col gap-6 pt-24">
-  <SectionHeading id="about-h">about</SectionHeading>
-  <div class="flex max-w-[760px] flex-col gap-4 font-sans text-[19px] leading-[1.65] text-prose">
-    <p>
+<section id="about" aria-labelledby="about-h" class="flex flex-col gap-6 pt-24 print:gap-2 print:pt-0">
+  <SectionHeading id="about-h"><TextPair screen="about" print="profile" /></SectionHeading>
+  <div
+    class="flex max-w-[760px] flex-col gap-4 font-sans text-[19px] leading-[1.65] text-prose print:text-[13.5px] print:leading-[1.6] print:text-ink"
+  >
+    <p class="print:hidden">
       I started coding for fun as a teenager — it grew into my main occupation. At 30, after years of autodidact training, I studied Software Engineering at the University of Applied Sciences Upper Austria in Hagenberg.
     </p>
-    <p>
+    <p class="print:hidden">
       {leadershipYears}+ years of leading and supporting engineering teams. Today I build AI agents for production and work hands-on with coding agents in agentic development workflows.
+    </p>
+    <p class="hidden print:block">
+      Developer, AI engineer and engineering leader with {careerYears}+ years of hands-on software engineering and {leadershipYears}+ years of leading and supporting engineering teams. I build production-grade AI agents and ship software with agentic development workflows: coding agents take on much of the implementation, and I step in myself wherever it counts — architecture, the tricky parts, review, and the call on what goes to production.
     </p>
   </div>
 </section>

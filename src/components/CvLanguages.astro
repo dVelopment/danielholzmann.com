@@ -1,0 +1,14 @@
+---
+/** Print-only languages block of the CV; nothing rendered while `languages` is unset. */
+import { languages } from "../data/profile";
+import SectionHeading from "./SectionHeading.astro";
+---
+
+{
+  languages && (
+    <section id="cv-languages" class="hidden flex-col gap-2 print:flex">
+      <SectionHeading>languages</SectionHeading>
+      <p>{languages}</p>
+    </section>
+  )
+}

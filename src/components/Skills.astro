@@ -1,9 +1,10 @@
 ---
 import { buildMonth } from "../data/build";
-import { DETAIL_CAP, listSkills, skills } from "../data/skills";
+import { cvSkills, DETAIL_CAP, listSkills, skills } from "../data/skills";
 import { cappedYears, yearsLabel, yearsSince } from "../lib/experience";
 import { points, radar, RADAR_CENTER, RADAR_RINGS } from "../lib/radar";
 import SectionHeading from "./SectionHeading.astro";
+import TextPair from "./TextPair.astro";
 
 const items = skills.map((skill) => ({
   name: skill.name,
@@ -14,25 +15,30 @@ const chart = radar(items);
 const ariaLabel = `Skill radar, years of experience capped at ${RADAR_RINGS}+: ${items
   .map(({ name, years }) => `${name} ${cappedYears(years, RADAR_RINGS)}`)
   .join(", ")}`;
-/** List rows keep their radar index, so data-skill still pairs each row with its axis. */
+/**
+ * List rows keep their radar index, so data-skill still pairs each row with its axis. Print reorders them into
+ * the CV order with CSS `order`, which is safe there: paper has no focus.
+ */
 const rows = listSkills.map((skill) => {
   const index = skills.indexOf(skill);
-  return { ...items[index], index };
+  return { ...items[index], index, cvName: skill.cvName, cvIndex: cvSkills.indexOf(skill) };
 });
 ---
 
 {/* data-skill ties each skill's list item, radar label, spoke and dot together for SkillsHighlight.astro. */}
-<section id="skills" aria-labelledby="skills-h" class="flex flex-col gap-5">
+<section id="skills" aria-labelledby="skills-h" class="flex flex-col gap-5 print:gap-2">
   <div class="flex flex-wrap items-baseline justify-between gap-3">
-    <SectionHeading id="skills-h">skills --years</SectionHeading>
-    <p class="text-xs text-muted">scale: years of hands-on experience · max {RADAR_RINGS}+</p>
+    <SectionHeading id="skills-h"><TextPair screen="skills --years" print="skills" /></SectionHeading>
+    <p class="text-xs text-muted print:hidden">scale: years of hands-on experience · max {RADAR_RINGS}+</p>
   </div>
-  <div class="flex flex-wrap items-center gap-10 rounded-[10px] border border-line bg-surface p-[clamp(20px,3vw,40px)]">
+  <div
+    class="flex flex-wrap items-center gap-10 rounded-[10px] border border-line bg-surface p-[clamp(20px,3vw,40px)] print:contents"
+  >
     <svg
       viewBox="-170 0 640 410"
       role="img"
       aria-label={ariaLabel}
-      class="h-auto w-full max-w-[640px] min-w-0 flex-[3_1_420px]"
+      class="h-auto w-full max-w-[640px] min-w-0 flex-[3_1_420px] print:hidden"
     >
       <g stroke-width="1" class="fill-none stroke-line">
         {chart.rings.map((ring, k) => <polygon points={points(ring)} class:list={{ "stroke-line-strong": k === RADAR_RINGS - 1 }} />)}
@@ -60,30 +66,38 @@ const rows = listSkills.map((skill) => {
       </g>
     </svg>
     {/* role="list": WebKit drops list semantics from unstyled lists. */}
-    <ul role="list" class="flex flex-[2_1_280px] flex-col gap-3.5">
+    <ul role="list" class="flex flex-[2_1_280px] flex-col gap-3.5 print:flex-none print:gap-[5px]">
       {
-        rows.map(({ name, years, index }) => (
-          <li tabindex="0" data-skill={index} class="group flex flex-col gap-1.5">
-            <div class="flex justify-between gap-3 text-[13px]">
-              <span class="text-fg">{name}</span>
-              {/* Both values share one grid cell; screen readers get the detailed one only. */}
+        rows.map(({ name, cvName, years, index, cvIndex }) => (
+          <li
+            tabindex="0"
+            data-skill={index}
+            style={`--cv-order: ${cvIndex}`}
+            class="group flex flex-col gap-1.5 print:order-(--cv-order)"
+          >
+            <div class="flex justify-between gap-3 text-[13px] print:gap-2">
+              {/* One flex item, whichever medium's name shows; the color is the body's (fg, ink in print). */}
+              <span>
+                <TextPair screen={name} print={cvName} />
+              </span>
+              {/* Both values share one grid cell; screen readers get the detailed one only. Print shows the detail. */}
               <span class="grid justify-items-end">
                 <span
                   aria-hidden="true"
                   data-capped
-                  class="col-start-1 row-start-1 text-muted group-hover:opacity-0 group-focus-visible:opacity-0"
+                  class="col-start-1 row-start-1 text-muted group-hover:opacity-0 group-focus-visible:opacity-0 print:hidden"
                 >
                   {yearsLabel(years, RADAR_RINGS)}
                 </span>
                 <span
                   data-detail
-                  class="col-start-1 row-start-1 text-accent opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
+                  class="col-start-1 row-start-1 text-accent opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 print:font-mono print:text-xs print:whitespace-nowrap print:text-ink-muted print:opacity-100"
                 >
                   {yearsLabel(years, DETAIL_CAP)}
                 </span>
               </span>
             </div>
-            <div aria-hidden="true" class="h-1 rounded-xs bg-line">
+            <div aria-hidden="true" class="h-1 rounded-xs bg-line print:hidden">
               <div
                 class="h-1 rounded-xs bg-accent"
                 style={`width: ${(Math.min(years, RADAR_RINGS) / RADAR_RINGS) * 100}%`}
@@ -93,5 +107,6 @@ const rows = listSkills.map((skill) => {
         ))
       }
     </ul>
+    <p class="mt-0.5 hidden text-xs text-ink-muted print:block">Years of hands-on experience</p>
   </div>
 </section>
