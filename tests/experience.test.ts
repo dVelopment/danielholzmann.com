@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { careerYearsAt, jobs } from '../src/data/jobs';
 import { skills } from '../src/data/skills';
 import {
+  cappedYears,
   compareMonths,
   durationLabel,
   formatMonth,
@@ -63,6 +64,14 @@ describe('yearsLabel', () => {
   test('singular year and under a year', () => {
     expect(yearsLabel(1, 5)).toBe('1 yr');
     expect(yearsLabel(0, 5)).toBe('<1 yr');
+  });
+
+  test('cappedYears is the label without its unit', () => {
+    expect(cappedYears(0, 5)).toBe('<1');
+    expect(cappedYears(1, 5)).toBe('1');
+    expect(cappedYears(4, 5)).toBe('4');
+    expect(cappedYears(5, 5)).toBe('5+');
+    expect(cappedYears(14, 5)).toBe('5+');
   });
 });
 

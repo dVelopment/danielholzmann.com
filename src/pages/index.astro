@@ -6,13 +6,17 @@ import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import Hero from "../components/Hero.astro";
 import PrintCv from "../components/PrintCv.astro";
+import Skills from "../components/Skills.astro";
+import SkillsHighlight from "../components/SkillsHighlight.astro";
 import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout>
+  <SkillsHighlight slot="head" />
   <Header />
   <main id="main">
     <Hero />
+    <Skills />
     <About />
     <Career />
     <PrintCv />

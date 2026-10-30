@@ -1,4 +1,4 @@
-import { type Month, yearsSince } from '../lib/experience';
+import { compareMonths, type Month, yearsSince } from '../lib/experience';
 import { buildMonth } from './build';
 
 export interface Skill {
@@ -6,7 +6,7 @@ export interface Skill {
   /** Shorter name on the printed CV. */
   cvName?: string;
   /** Radar label split into lines, when one line is too wide. */
-  radarLabel?: readonly string[];
+  radarLabel?: readonly [string, ...string[]];
   /** Month hands-on experience began; a bare year counts from January. */
   start: Month;
   /** Focus skills, listed first on the printed CV. */
@@ -40,3 +40,19 @@ export const skills: readonly Skill[] = [
 
 /** Full years of leading teams, as in the about text ("N+ years"). */
 export const leadershipYears = yearsSince(leadership.start, buildMonth);
+
+/** Cap for the hover/focus detail duration (`10+ yrs`); the printed CV (#33) will use it too. */
+export const DETAIL_CAP = 10;
+
+/**
+ * Skill order for the printed CV (#33): featured skills first, then the rest; within each, the most recently
+ * started first; ties by name A→Z. Depends on the data only, so the order never reshuffles as durations grow.
+ */
+export function cvOrder(list: readonly Skill[]): Skill[] {
+  return list.toSorted(
+    (a, b) =>
+      Number(!!b.featured) - Number(!!a.featured) ||
+      compareMonths(b.start, a.start) ||
+      a.name.localeCompare(b.name, 'en'),
+  );
+}
