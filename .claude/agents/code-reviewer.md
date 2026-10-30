@@ -28,7 +28,6 @@ You are a code reviewer for this Gatsby/React portfolio site.
 
 ### Data
 - Content comes from `data/siteConfig.js` - don't hardcode content in components
-- GraphQL queries for dynamic data (GitHub repos)
 
 ## Review Checklist
 

@@ -9,7 +9,6 @@ import BentoCard from "../components/bento/BentoCard";
 import AboutCard from "../components/cards/AboutCard";
 import SkillsRadar from "../components/cards/SkillsRadar";
 import TimelineCard from "../components/cards/TimelineCard";
-import ReposCard from "../components/cards/ReposCard";
 import SocialCard from "../components/cards/SocialCard";
 
 const IndexPage: React.FC<PageProps> = () => {
@@ -29,16 +28,12 @@ const IndexPage: React.FC<PageProps> = () => {
           <SkillsRadar />
         </BentoCard>
 
-        {/* Row 2: Timeline (wide) + Repos + Social */}
+        {/* Row 2: Timeline (wide) + Social (wide) */}
         <BentoCard size="wide" delay={2}>
           <TimelineCard />
         </BentoCard>
 
-        <BentoCard delay={3}>
-          <ReposCard />
-        </BentoCard>
-
-        <BentoCard delay={4}>
+        <BentoCard size="wide" delay={3}>
           <SocialCard />
         </BentoCard>
       </BentoGrid>

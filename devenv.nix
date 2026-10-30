@@ -1,10 +1,9 @@
-{ pkgs, config, ... }:
+{ pkgs, ... }:
 
 {
   # https://devenv.sh/packages/
   packages = [
     pkgs.git
-    pkgs._1password-cli
   ];
 
   # https://devenv.sh/languages/javascript/
@@ -16,10 +15,6 @@
     bun.enable = true;
     bun.install.enable = true;
   };
-
-  # From secretspec.toml via the devenv.yaml `secretspec` integration. Needed
-  # by gatsby-source-graphql (GitHub GraphQL API) at build/develop time.
-  env.GITHUB_TOKEN = config.secretspec.secrets.GITHUB_TOKEN or "";
 
   # https://devenv.sh/processes/ — `devenv up` runs the Gatsby dev server.
   processes.gatsby.exec = "bun run develop";
