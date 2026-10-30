@@ -32,6 +32,6 @@ bunx prettier --write .  # Format .ts/.json/.md/.css (`.prettierrc`; not a depen
 - `src/components/`: one component per page section; `SectionHeading.astro` renders the designs' `## …` headings
 - `src/pages/`: `index.astro` (start page) and `404.astro`
 - `src/data/`: typed content. `profile.ts` (identity, social links, education, languages), `jobs.ts` (career, plus derived `currentJob` and `careerYears`), `skills.ts` (start month, CV/radar names, featured flag), `build.ts` (the build month in Vienna time, which every number counts up to). Store start/end months only; no year count is ever typed by hand
-- `src/lib/experience.ts`: pure month math (`yearsSince`, `yearsLabel`, `durationLabel`, month formats). Months are `YYYY-MM` or `YYYY` (January)
+- `src/lib/experience.ts`: pure month math (`yearsSince`, `yearsLabel`, `durationLabel`, month formats). A `Month` is `{ year, month }` (month 1–12) or a bare year meaning January
 - `src/images/`: images processed by Astro's image pipeline (avatar)
 - `public/`: static files served as-is (favicon, touch icon, manifest icons, `manifest.webmanifest`)

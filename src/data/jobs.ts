@@ -20,7 +20,7 @@ export const jobs: readonly Job[] = [
   {
     role: 'Head of Engineering',
     company: 'Sitelevel.ai',
-    start: '2025-03',
+    start: { year: 2025, month: 3 },
     summary:
       'Leading engineering and building production-grade AI agents and agentic workflows.',
     cvSummary:
@@ -29,8 +29,8 @@ export const jobs: readonly Job[] = [
   {
     role: 'Principal Software Architect',
     company: 'Bond Vet',
-    start: '2018-05',
-    end: '2025-02',
+    start: { year: 2018, month: 5 },
+    end: { year: 2025, month: 2 },
     summary:
       'Led the engineering team; all in-house and client-facing websites and apps.',
     cvSummary:
@@ -39,16 +39,16 @@ export const jobs: readonly Job[] = [
   {
     role: 'Lead Developer',
     company: 'Veho Technologies',
-    start: '2017-01',
-    end: '2018-03',
+    start: { year: 2017, month: 1 },
+    end: { year: 2018, month: 3 },
     summary: 'Web, Android and iOS apps.',
     cvSummary: 'Development of web, Android and iOS apps.',
   },
   {
     role: 'Lead Developer',
     company: 'atipso',
-    start: '2011-02',
-    end: '2016-01',
+    start: { year: 2011, month: 2 },
+    end: { year: 2016, month: 1 },
     summary: 'Consultant and technical lead as a freelancer.',
     cvSummary: 'Consultant and technical lead as a freelancer.',
   },
@@ -56,7 +56,7 @@ export const jobs: readonly Job[] = [
     role: 'Freelance',
     cvRole: 'Freelance Web Developer',
     company: 'danielholzmann.com',
-    start: '2006-02',
+    start: { year: 2006, month: 2 },
     summary: 'Web development, specialized in React and Node.js.',
     cvSummary: 'Web development, specialized in React and Node.js.',
   },

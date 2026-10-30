@@ -6,30 +6,47 @@ import {
   durationLabel,
   formatMonth,
   formatMonthNumeric,
+  type Month,
   monthOf,
+  type YearMonth,
   yearsLabel,
   yearsSince,
 } from '../src/lib/experience';
 
+// Unchecked on purpose, so tests can build invalid months too.
+const ym = (year: number, month: number) => ({ year, month }) as YearMonth;
+
 describe('yearsSince', () => {
   test('counts a year only once the start month comes round again', () => {
-    expect(yearsSince('2025-05', '2026-04')).toBe(0);
-    expect(yearsSince('2025-05', '2026-05')).toBe(1);
-    expect(yearsSince('2006-02', '2026-10')).toBe(20);
+    expect(yearsSince(ym(2025, 5), ym(2026, 4))).toBe(0);
+    expect(yearsSince(ym(2025, 5), ym(2026, 5))).toBe(1);
+    expect(yearsSince(ym(2006, 2), ym(2026, 10))).toBe(20);
   });
 
   test('a bare year counts from January', () => {
-    expect(yearsSince('2015', '2025-12')).toBe(10);
-    expect(yearsSince('2015', '2026-01')).toBe(11);
+    expect(yearsSince(2015, ym(2025, 12))).toBe(10);
+    expect(yearsSince(2015, ym(2026, 1))).toBe(11);
   });
 
   test('is never negative', () => {
-    expect(yearsSince('2027-01', '2026-10')).toBe(0);
+    expect(yearsSince(ym(2027, 1), ym(2026, 10))).toBe(0);
   });
 
   test('rejects malformed months', () => {
-    for (const month of ['2025-13', '2025-00', '2025-3', '25-03', 'May 2025'])
-      expect(() => yearsSince(month as '2025', '2026-01')).toThrow(month);
+    const bad: Month[] = [
+      ym(2025, 13),
+      ym(2025, 0),
+      ym(2025, 1.5),
+      ym(25, 3),
+      ym(Number.NaN, 3),
+      20255,
+      2025.5,
+    ];
+    for (const month of bad)
+      expect(() => yearsSince(month, ym(2026, 1))).toThrow('invalid month');
+    expect(() => yearsSince(ym(Number.NaN, 3), 2026)).toThrow(
+      'invalid month: year NaN, month 3',
+    );
   });
 });
 
@@ -63,13 +80,14 @@ describe('durationLabel', () => {
   });
 
   test('singular units and short jobs', () => {
-    expect(durationLabel('2020-01', '2020-01')).toBe('1 mo');
-    expect(durationLabel('2020-01', '2021-02')).toBe('1 yr 2 mos');
-    expect(durationLabel('2020-12', '2021-01')).toBe('2 mos');
+    expect(durationLabel(ym(2020, 1), ym(2020, 1))).toBe('1 mo');
+    expect(durationLabel(ym(2020, 1), ym(2021, 2))).toBe('1 yr 2 mos');
+    expect(durationLabel(ym(2020, 12), ym(2021, 1))).toBe('2 mos');
+    expect(durationLabel(2020, 2020)).toBe('1 mo');
   });
 
   test('rejects an end before the start', () => {
-    expect(() => durationLabel('2020-02', '2020-01')).toThrow();
+    expect(() => durationLabel(ym(2020, 2), ym(2020, 1))).toThrow();
   });
 });
 
@@ -82,33 +100,34 @@ describe('content data', () => {
   });
 
   test('career years count full years since the earliest job (Feb 2006)', () => {
-    expect(careerYearsAt('2026-10')).toBe(20);
-    expect(careerYearsAt('2027-01')).toBe(20);
-    expect(careerYearsAt('2027-02')).toBe(21);
+    expect(careerYearsAt(ym(2026, 10))).toBe(20);
+    expect(careerYearsAt(ym(2027, 1))).toBe(20);
+    expect(careerYearsAt(ym(2027, 2))).toBe(21);
   });
 });
 
 describe('formatting', () => {
   test('screen and CV month formats', () => {
-    expect(formatMonth('2025-03')).toBe('Mar 2025');
-    expect(formatMonth('2016')).toBe('Jan 2016');
-    expect(formatMonth('2018-12')).toBe('Dec 2018');
-    expect(formatMonthNumeric('2025-03')).toBe('03/2025');
-    expect(formatMonthNumeric('2018-12')).toBe('12/2018');
+    expect(formatMonth(ym(2025, 3))).toBe('Mar 2025');
+    expect(formatMonth(2016)).toBe('Jan 2016');
+    expect(formatMonth(ym(2018, 12))).toBe('Dec 2018');
+    expect(formatMonthNumeric(ym(2025, 3))).toBe('03/2025');
+    expect(formatMonthNumeric(ym(2018, 12))).toBe('12/2018');
   });
 
   test('monthOf takes the Vienna month, summer and winter time', () => {
-    expect(monthOf(new Date('2026-10-31T22:30:00Z'))).toBe('2026-10');
-    expect(monthOf(new Date('2026-10-31T23:30:00Z'))).toBe('2026-11');
-    expect(monthOf(new Date('2026-12-31T22:59:00Z'))).toBe('2026-12');
-    expect(monthOf(new Date('2026-12-31T23:00:00Z'))).toBe('2027-01');
-    expect(monthOf(new Date('2026-06-30T21:59:00Z'))).toBe('2026-06');
-    expect(monthOf(new Date('2026-06-30T22:00:00Z'))).toBe('2026-07');
+    const at = (iso: string) => monthOf(new Date(iso));
+    expect(at('2026-10-31T22:30:00Z')).toEqual(ym(2026, 10));
+    expect(at('2026-10-31T23:30:00Z')).toEqual(ym(2026, 11));
+    expect(at('2026-12-31T22:59:00Z')).toEqual(ym(2026, 12));
+    expect(at('2026-12-31T23:00:00Z')).toEqual(ym(2027, 1));
+    expect(at('2026-06-30T21:59:00Z')).toEqual(ym(2026, 6));
+    expect(at('2026-06-30T22:00:00Z')).toEqual(ym(2026, 7));
   });
 
   test('compareMonths orders bare years as January', () => {
-    expect(compareMonths('2016', '2016-01')).toBe(0);
-    expect(compareMonths('2016', '2016-02')).toBeLessThan(0);
-    expect(compareMonths('2025-05', '2025')).toBeGreaterThan(0);
+    expect(compareMonths(2016, ym(2016, 1))).toBe(0);
+    expect(compareMonths(2016, ym(2016, 2))).toBeLessThan(0);
+    expect(compareMonths(ym(2025, 5), 2025)).toBeGreaterThan(0);
   });
 });

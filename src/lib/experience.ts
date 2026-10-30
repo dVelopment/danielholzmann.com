@@ -1,24 +1,16 @@
-/**
- * Build-time experience math on calendar months. Pure: no Astro, no clock.
- * A month is written `YYYY-MM`; a bare `YYYY` means January of that year.
- */
-type MonthNumber =
-  | '01'
-  | '02'
-  | '03'
-  | '04'
-  | '05'
-  | '06'
-  | '07'
-  | '08'
-  | '09'
-  | '10'
-  | '11'
-  | '12';
-/** Checks the month part only; `parseMonth` also rejects years that aren't 4 digits. */
-export type Month = `${number}-${MonthNumber}` | `${number}`;
+/** Build-time experience math on calendar months. Pure: no Astro, no clock. */
 
-const MONTH_PATTERN = /^(\d{4})(?:-(0[1-9]|1[0-2]))?$/;
+/** 1 = January … 12 = December. */
+export type MonthNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+
+export interface YearMonth {
+  readonly year: number;
+  readonly month: MonthNumber;
+}
+
+/** A calendar month, or a bare year meaning January of that year. */
+export type Month = number | YearMonth;
+
 const MONTH_NAMES = [
   'Jan',
   'Feb',
@@ -34,17 +26,25 @@ const MONTH_NAMES = [
   'Dec',
 ];
 
-/** Year and 1-based month; throws on anything but `YYYY` or `YYYY-MM`, so bad input never renders. */
-function parseMonth(month: Month): { year: number; month: number } {
-  const match = MONTH_PATTERN.exec(month);
-  if (!match)
-    throw new Error(`invalid month "${month}", expected YYYY or YYYY-MM`);
-  return { year: Number(match[1]), month: Number(match[2] ?? 1) };
+/** Validated year and month; throws unless the year is 1000–9999 and the month an integer 1–12, so bad input never renders. */
+function toYearMonth(value: Month): YearMonth {
+  const { year, month }: { year: number; month: number } =
+    typeof value === 'number' ? { year: value, month: 1 } : value;
+  if (
+    !Number.isInteger(year) ||
+    year < 1000 ||
+    year > 9999 ||
+    !Number.isInteger(month) ||
+    month < 1 ||
+    month > 12
+  )
+    throw new Error(`invalid month: year ${year}, month ${month}`);
+  return { year, month: month as MonthNumber };
 }
 
 /** Months since year 0, for month arithmetic. */
 function monthIndex(value: Month): number {
-  const { year, month } = parseMonth(value);
+  const { year, month } = toYearMonth(value);
   return year * 12 + month - 1;
 }
 
@@ -53,16 +53,18 @@ function count(n: number, unit: 'yr' | 'mo'): string {
   return n === 1 ? `1 ${unit}` : `${n} ${unit}s`;
 }
 
-// en-CA formats a year and month as `YYYY-MM`.
-const VIENNA_MONTH = new Intl.DateTimeFormat('en-CA', {
+const VIENNA_MONTH = new Intl.DateTimeFormat('en', {
   timeZone: 'Europe/Vienna',
   year: 'numeric',
-  month: '2-digit',
+  month: 'numeric',
 });
 
 /** The calendar month of `date` in Vienna, e.g. the build month. */
-export function monthOf(date: Date): Month {
-  return VIENNA_MONTH.format(date) as Month;
+export function monthOf(date: Date): YearMonth {
+  const parts = VIENNA_MONTH.formatToParts(date);
+  const year = Number(parts.find((p) => p.type === 'year')?.value);
+  const month = Number(parts.find((p) => p.type === 'month')?.value);
+  return toYearMonth({ year, month } as YearMonth);
 }
 
 /** Sort comparator: negative when `a` is the earlier month. */
@@ -86,7 +88,9 @@ export function yearsLabel(years: number, cap: number): string {
 export function durationLabel(start: Month, end: Month): string {
   const months = monthIndex(end) - monthIndex(start) + 1;
   if (months < 1)
-    throw new Error(`job ends (${end}) before it starts (${start})`);
+    throw new Error(
+      `job ends (${JSON.stringify(end)}) before it starts (${JSON.stringify(start)})`,
+    );
   const years = Math.floor(months / 12);
   const rest = months % 12;
   const parts: string[] = [];
@@ -96,13 +100,13 @@ export function durationLabel(start: Month, end: Month): string {
 }
 
 /** `Mar 2025`, as on screen. */
-export function formatMonth(month: Month): string {
-  const { year, month: number } = parseMonth(month);
-  return `${MONTH_NAMES[number - 1]} ${year}`;
+export function formatMonth(value: Month): string {
+  const { year, month } = toYearMonth(value);
+  return `${MONTH_NAMES[month - 1]} ${year}`;
 }
 
 /** `03/2025`, as on the printed CV. */
-export function formatMonthNumeric(month: Month): string {
-  const { year, month: number } = parseMonth(month);
-  return `${String(number).padStart(2, '0')}/${year}`;
+export function formatMonthNumeric(value: Month): string {
+  const { year, month } = toYearMonth(value);
+  return `${String(month).padStart(2, '0')}/${year}`;
 }

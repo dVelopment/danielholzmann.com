@@ -200,7 +200,7 @@ describe('start page', () => {
   test('hero and footer count up to the build month', () => {
     const now = new Date();
     // Career starts with the earliest job (Feb 2006); the current role is the latest ongoing one.
-    const years = yearsSince('2006-02', monthOf(now));
+    const years = yearsSince({ year: 2006, month: 2 }, monthOf(now));
     // Compressed HTML drops whitespace between blocks, so check each block's text.
     for (const text of [
       `backed by ${years}+ years of hands-on software engineering.`,
@@ -209,9 +209,7 @@ describe('start page', () => {
     ])
       expect(home.text['#top']).toContain(text);
     expect(meta(home, 'description')).toContain(`${years}+ years`);
-    expect(home.text.footer).toBe(
-      `daniel@portfolio:~$ © ${monthOf(now).slice(0, 4)}`,
-    );
+    expect(home.text.footer).toBe(`daniel@portfolio:~$ © ${monthOf(now).year}`);
   });
 
   test('the first link skips to the main landmark', () => {
