@@ -1,4 +1,12 @@
-# Nixpacks' nixpkgs ships bun 1.2.10, which cannot parse bun.lock lockfileVersion 2
-# and silently re-resolves dependencies. Install with the bun that wrote the lockfile.
+# Nixpacks' nixpkgs ships bun 1.2.10, which cannot parse bun.lock lockfileVersion 2.
+# Install and build with the bun that wrote the lockfile (keep in sync with local bun).
+# Node is in the image only to run that `npx`; without a pin Nixpacks picks Node 18,
+# which nixpkgs has removed, and setup fails.
+[variables]
+NIXPACKS_NODE_VERSION = "22"
+
 [phases.install]
 cmds = ["npx --yes bun@1.4.2 install --frozen-lockfile"]
+
+[phases.build]
+cmds = ["npx --yes bun@1.4.2 run build"]

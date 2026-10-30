@@ -56,9 +56,9 @@ typings/
 .env.development
 .env.production
 
-# gatsby files
-.cache/
-public
+# Astro build output and generated types (public/ is a committed input dir)
+dist/
+.astro/
 
 # Mac files
 .DS_Store
