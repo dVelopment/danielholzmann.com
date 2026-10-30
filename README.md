@@ -19,8 +19,7 @@ bun test
 
 Dokploy builds with Nixpacks; `nixpacks.toml` installs and builds with pinned `bun@1.4.2`.
 
-- Dokploy must serve `dist/` (Astro's output), not `public/`, which is now a committed input directory.
-- The build no longer reads `GITHUB_TOKEN`; remove it from the Dokploy environments.
+- Dokploy must serve `dist/` (Astro's output), not `public/`, which is a committed input directory.
 
 ## Content
 
