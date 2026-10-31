@@ -13,7 +13,7 @@ The skills radar, bars and list labels showed years of experience, capped at `5+
 
 1. **The skills section becomes Focus areas** (see `GLOSSARY.md`). Code, ids, data attributes and component names use focus area, focus level and experience.
 2. **Each focus area has a hand-set focus level from 1 to 5.** The radar value, the bar width (level ÷ 5) and the list's default label (`N/5`) show the focus level. Ring labels read `1`–`5`; the screen caption reads "scale: focus level · 1–5"; the radar's accessible label lists each focus area with its level.
-3. **Experience stays computed.** Each focus area keeps its start month; years are counted to the build month as in ADR 0001 decision 5 and shown, capped at `10+`, on hover and keyboard focus on screen and on every printed row. Leadership years in the about and profile text use the same cap, so they read `10+`; career years stay exact. No year count is typed by hand.
+3. **Experience stays computed.** Each focus area keeps its start month; years are counted to the build month as in ADR 0001 decision 5 and shown, capped at `10+`, on hover and keyboard focus on screen and on every printed row. Leadership years in the about and profile text round down to whole decades (`10+`, `20+` from 2035); career years stay exact. No year count is typed by hand.
 4. **One hand-kept list order serves screen and print.** The `featured` flag and the computed CV sort are gone; print keeps the DOM order, so nothing is reordered with CSS `order`. The printed note reads "Ordered by focus · years of hands-on experience". The radar axis order stays separate, chosen so every label fits the radar's viewBox.
 
 ## Consequences

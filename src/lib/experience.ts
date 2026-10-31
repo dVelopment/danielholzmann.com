@@ -84,6 +84,11 @@ export function yearsLabel(years: number, cap: number): string {
   return count(years, 'yr');
 }
 
+/** Full years rounded down to whole decades, for `N+` counts in prose: 11 → 10, 21 → 20. */
+export function floorToDecade(years: number): number {
+  return Math.floor(years / 10) * 10;
+}
+
 /** Length of a job counting both its first and last month: `6 yrs 10 mos`, `1 yr 3 mos`, `5 yrs`. */
 export function durationLabel(start: Month, end: Month): string {
   const months = monthIndex(end) - monthIndex(start) + 1;

@@ -4,6 +4,7 @@ import { focusAreas } from '../src/data/focus-areas';
 import {
   compareMonths,
   durationLabel,
+  floorToDecade,
   formatMonth,
   formatMonthNumeric,
   type Month,
@@ -63,6 +64,16 @@ describe('yearsLabel', () => {
   test('singular year and under a year', () => {
     expect(yearsLabel(1, 5)).toBe('1 yr');
     expect(yearsLabel(0, 5)).toBe('<1 yr');
+  });
+});
+
+describe('floorToDecade', () => {
+  test('rounds full years down to whole decades', () => {
+    expect(floorToDecade(10)).toBe(10);
+    expect(floorToDecade(11)).toBe(10);
+    expect(floorToDecade(19)).toBe(10);
+    expect(floorToDecade(20)).toBe(20);
+    expect(floorToDecade(21)).toBe(20);
   });
 });
 

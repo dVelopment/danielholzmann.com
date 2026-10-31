@@ -1,12 +1,13 @@
 ---
 /** About on screen; the CV's profile paragraph in print. */
-import { DETAIL_CAP, leadershipYears } from "../data/focus-areas";
+import { leadershipYears } from "../data/focus-areas";
 import { careerYears } from "../data/jobs";
+import { floorToDecade } from "../lib/experience";
 import SectionHeading from "./SectionHeading.astro";
 import TextPair from "./TextPair.astro";
 
-/** Leadership reads `10+` once past the experience cap, like every capped experience. */
-const leading = Math.min(leadershipYears, DETAIL_CAP);
+/** Leadership counts in whole decades (`10+`, then `20+` from 2035). */
+const leading = floorToDecade(leadershipYears);
 ---
 
 <section id="about" aria-labelledby="about-h" class="flex flex-col gap-6 pt-24 print:gap-2 print:pt-0">
