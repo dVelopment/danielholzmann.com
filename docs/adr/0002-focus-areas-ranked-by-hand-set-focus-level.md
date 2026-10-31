@@ -1,6 +1,6 @@
 # 2. Focus areas ranked by a hand-set focus level
 
-- Status: accepted
+- Status: accepted, partly superseded by [ADR 0003](0003-radar-shows-skill-level-bars-show-experience.md)
 - Date: 2026-10-31
 - Spec: [#39](https://github.com/dVelopment/danielholzmann.com/issues/39), ticket [#40](https://github.com/dVelopment/danielholzmann.com/issues/40)
 - Partly supersedes: [ADR 0001](0001-astro-on-bun-single-dom-screen-and-print.md) decision 3's "print reorders skills via CSS `order`" clause, and decision 5's per-surface caps, stored fields and exact career and leadership counts in prose (focus areas also store a hand-set level; experience and its `10+` cap stay)
