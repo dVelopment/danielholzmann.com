@@ -1,4 +1,9 @@
-import { compareMonths, type Month, yearsSince } from '../lib/experience';
+import {
+  compareMonths,
+  floorToDecade,
+  type Month,
+  yearsSince,
+} from '../lib/experience';
 import { buildMonth } from './build';
 
 export interface Job {
@@ -71,9 +76,10 @@ if (!latestOngoing)
 /** The ongoing job that started last. */
 export const currentJob: Job = latestOngoing;
 
-/** Full years from the earliest job start to `month`: the career length in prose ("N+ years"). */
+/** Full years from the earliest job start to `month`. */
 export function careerYearsAt(month: Month): number {
   return Math.max(...jobs.map((job) => yearsSince(job.start, month)));
 }
 
-export const careerYears = careerYearsAt(buildMonth);
+/** Career length in prose ("N+ years"), in whole decades: `20+`, then `30+` from Feb 2036. */
+export const careerYears = floorToDecade(careerYearsAt(buildMonth));

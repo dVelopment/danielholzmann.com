@@ -5,7 +5,6 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
-  cappedYears,
   type Month,
   monthOf,
   yearsLabel,
@@ -168,31 +167,65 @@ afterAll(() => rmSync(outDir, { recursive: true, force: true }));
 const texts = (html: string, selector: string) =>
   each(html, selector).map((m) => m.text);
 
-/** Each skill list item as [name, capped label, detail label, bar style]. */
-function skillRows(html: string) {
-  const capped = texts(html, '#skills li [data-capped]');
-  const detail = texts(html, '#skills li [data-detail]');
-  const bars = each(html, '#skills li div[style]').map((m) => m.attrs.style);
-  return texts(html, '#skills li > div > span:first-child').map((name, i) => [
+/**
+ * The agreed focus areas in list order: name, CV name, focus level, start. Literals, so the tests don't check the
+ * code against itself.
+ */
+const FOCUS_AREAS: [string, string, number, Month][] = [
+  ['AI agents', 'AI agents', 5, 2024],
+  [
+    'Agentic development workflows',
+    'Agentic dev workflows',
+    5,
+    { year: 2025, month: 5 },
+  ],
+  ['JavaScript / TypeScript', 'JavaScript / TypeScript', 4, 2016],
+  ['Rust', 'Rust', 4, 2024],
+  ['Engineering leadership', 'Engineering leadership', 4, 2015],
+  ['System integration', 'System integration', 3, 2006],
+  ['Node.js', 'Node.js', 3, 2012],
+  ['React', 'React', 2, 2016],
+];
+/** Each focus area's experience at the build month, capped at 10. */
+const BUILD_EXPERIENCE = FOCUS_AREAS.map(([, , , start]) =>
+  yearsLabel(yearsSince(start, monthOf(new Date())), 10),
+);
+/** Data polygon of the levels in radar order (JS/TS 4, Node.js 3, React 2, System integration 3, Rust 4, AI agents 5, Agentic 5, leadership 4). */
+const LEVEL_POLYGON =
+  '200,72 267.9,132.1 264,200 267.9,267.9 200,328 86.9,313.1 40,200 109.5,109.5';
+
+const NAMES = '#focus-areas li > div > span:first-child';
+
+/** Each focus area list item as [name, level label, experience label, bar style]. */
+function focusAreaRows(html: string) {
+  const levels = texts(html, '#focus-areas li [data-level]');
+  const experience = texts(html, '#focus-areas li [data-experience]');
+  const bars = each(html, '#focus-areas li div[style]').map(
+    (m) => m.attrs.style,
+  );
+  return texts(html, NAMES).map((name, i) => [
     name,
-    capped[i],
-    detail[i],
+    levels[i],
+    experience[i],
     bars[i],
   ]);
 }
 
-/** The printed CV's skills as [name, years], in the order print shows them (CSS `order` from `--cv-order`). */
-function printedSkills(print: string) {
-  const names = texts(print, '#skills li > div > span:first-child');
-  const years = texts(print, '#skills li [data-detail]');
-  const order = each(print, '#skills li').map(({ attrs }) =>
-    Number(attrs.style.match(/--cv-order:\s*(\d+)/)?.[1]),
-  );
-  expect(order.toSorted((a, b) => a - b)).toEqual(names.map((_, i) => i));
-  return names
-    .map((name, i) => ({ row: [name, years[i]], at: order[i] }))
-    .toSorted((a, b) => a.at - b.at)
-    .map(({ row }) => row);
+/** The printed CV's focus areas as [name, years], in document order: print doesn't reorder them. */
+function printedFocusAreas(print: string) {
+  return focusAreaRows(print).map(([name, , experience]) => [name, experience]);
+}
+
+/** The radar's data polygon and its vertex dots, each as an SVG points string. */
+function radarShape(html: string) {
+  return {
+    polygon: each(html, '#focus-areas svg > polygon').map(
+      (p) => p.attrs.points,
+    ),
+    dots: each(html, '#focus-areas circle')
+      .map(({ attrs }) => `${attrs.cx},${attrs.cy}`)
+      .join(' '),
+  };
 }
 
 describe('start page', () => {
@@ -260,7 +293,7 @@ describe('start page', () => {
     expect(css).toMatch(
       /:focus-visible\s*\{[^}]*outline-width:\s*2px[^}]*outline-color:\s*var\(--color-accent\)/,
     );
-    // A skill item still focused when printing doesn't put the ring on the CV.
+    // A focus area item still focused when printing doesn't put the ring on the CV.
     expect(css).toMatch(
       /@media print\s*\{\s*:focus-visible\s*\{[^}]*outline-style:\s*none/,
     );
@@ -310,7 +343,7 @@ describe('start page', () => {
 
   test('section headings follow the design, in page order', () => {
     expect(texts(home.screen, 'h2')).toEqual([
-      '## skills --years',
+      '## focus-areas --level',
       '## about',
       '## git log --career',
       '$ print --format=cv',
@@ -318,13 +351,10 @@ describe('start page', () => {
     ]);
   });
 
-  test('about prints both paragraphs, counting leadership years up to the build month', () => {
-    // A literal, not `leadershipYears`, so the test doesn't check the code against itself:
-    // leadership starts with the "Engineering leadership" skill (2015, i.e. Jan 2015).
-    const years = yearsSince(2015, monthOf(new Date()));
+  test('about prints both paragraphs, leadership years capped at 10+', () => {
     expect(texts(home.screen, '#about p')).toEqual([
       'I started coding for fun as a teenager — it grew into my main occupation. At 30, after years of autodidact training, I studied Software Engineering at the University of Applied Sciences Upper Austria in Hagenberg.',
-      `${years}+ years of leading and supporting engineering teams. Today I build AI agents for production and work hands-on with coding agents in agentic development workflows.`,
+      '10+ years of leading and supporting engineering teams. Today I build AI agents for production and work hands-on with coding agents in agentic development workflows.',
     ]);
   });
 
@@ -397,61 +427,50 @@ describe('start page', () => {
     expect(targets.filter((id) => !ids.has(id))).toEqual([]);
   });
 
-  test('skills list the AI skills first, then the radar order, with capped and detailed years for the build month', () => {
-    // Literal starts, so the test doesn't check the code against itself.
-    const now = monthOf(new Date());
-    const skillYears = (
-      [
-        ['JavaScript / TypeScript', 2016],
-        ['Node.js', 2012],
-        ['React', 2016],
-        ['Solid.js', 2025],
-        ['Rust', 2024],
-        ['AI agents', 2024],
-        ['Agentic development workflows', { year: 2025, month: 5 }],
-        ['Engineering leadership', 2015],
-      ] as [string, Month][]
-    ).map(([name, start]) => [name, yearsSince(start, now)] as const);
-    // List order: AI agents and Agentic lead; the rest follow the radar.
-    const listOrder = [5, 6, 0, 1, 2, 3, 4, 7];
-    expect(skillRows(home.screen)).toEqual(
-      listOrder.map((i) => {
-        const [name, years] = skillYears[i];
-        return [
-          name,
-          yearsLabel(years, 5),
-          yearsLabel(years, 10),
-          `width: ${(Math.min(years, 5) / 5) * 100}%`,
-        ];
-      }),
+  test('focus areas list in the agreed order with level labels and bars, revealing experience for the build month', () => {
+    expect(focusAreaRows(home.screen)).toEqual(
+      FOCUS_AREAS.map(([name, , level], i) => [
+        name,
+        `${level}/5`,
+        BUILD_EXPERIENCE[i],
+        `width: ${level * 20}%`,
+      ]),
     );
-    const [radarImage] = each(home.html, '#skills svg');
+    const [radarImage] = each(home.html, '#focus-areas svg');
     expect(radarImage.attrs.role).toBe('img');
+    // HTMLRewriter lowercases attribute names.
+    expect(radarImage.attrs.viewbox).toBe('-170 0 640 410');
     expect(radarImage.attrs['aria-label']).toBe(
-      `Skill radar, years of experience capped at 5+: ${skillYears
-        .map(([name, years]) => `${name} ${cappedYears(years, 5)}`)
-        .join(', ')}`,
+      'Focus area radar, focus level out of 5: JavaScript / TypeScript 4, Node.js 3, React 2, System integration 3, Rust 4, AI agents 5, Agentic development workflows 5, Engineering leadership 4',
     );
-    // Built polygon and vertex dots sit where the (design-checked) geometry puts these years.
-    const vertices = radar(
-      skillYears.map(([, years]) => ({ label: ['x'] as const, years })),
-    ).vertices;
+    expect(texts(home.screen, '#focus-areas p')).toEqual([
+      'scale: focus level · 1–5',
+    ]);
+    // Polygon and vertex dots sit on the ring of each level.
+    expect(radarShape(home.html)).toEqual({
+      polygon: [LEVEL_POLYGON],
+      dots: LEVEL_POLYGON,
+    });
+    // Screen readers skip the visual level label and the bar, and hear name, level and experience instead.
     expect(
-      each(home.html, '#skills svg > polygon').map((p) => p.attrs.points),
-    ).toEqual([points(vertices)]);
-    expect(
-      each(home.html, '#skills circle').map(({ attrs }) => ({
-        x: Number(attrs.cx),
-        y: Number(attrs.cy),
-      })),
-    ).toEqual([...vertices]);
-    // Screen readers get the detailed value only: per item, just the capped label and the bar are hidden.
-    expect(
-      each(home.html, '#skills [aria-hidden]').map(({ attrs, text }) =>
-        'data-capped' in attrs ? 'capped' : text || 'bar',
+      each(home.html, '#focus-areas [aria-hidden]').map(({ attrs, text }) =>
+        'data-level' in attrs ? 'level' : text || 'bar',
       ),
-    ).toEqual(skillYears.flatMap(() => ['capped', 'bar']));
-    for (const span of each(home.html, '#skills [data-detail]'))
+    ).toEqual(FOCUS_AREAS.flatMap(() => ['level', 'bar']));
+    const spoken = new HTMLRewriter()
+      .on('[aria-hidden="true"]', {
+        element(el) {
+          el.remove();
+        },
+      })
+      .transform(home.screen);
+    expect(texts(spoken, '#focus-areas li')).toEqual(
+      FOCUS_AREAS.map(
+        ([name, , level], i) =>
+          `${name} focus level ${level} of 5, ${BUILD_EXPERIENCE[i]}`,
+      ),
+    );
+    for (const span of each(home.html, '#focus-areas [data-experience]'))
       expect(span.attrs.class).not.toMatch(/\b(hidden|sr-only|invisible)\b/);
   });
 
@@ -459,24 +478,20 @@ describe('start page', () => {
     // Rings depend on the axis count only; radar.test.ts pins them against the design.
     const eightAxes = Array.from({ length: 8 }, () => ({
       label: ['x'] as const,
-      years: 0,
+      value: 0,
     }));
     expect(
-      each(home.html, '#skills svg > g > polygon').map((p) => p.attrs.points),
+      each(home.html, '#focus-areas svg > g > polygon').map(
+        (p) => p.attrs.points,
+      ),
     ).toEqual(radar(eightAxes).rings.map(points));
     expect(
-      each(home.html, '#skills svg text')
-        .filter((t) => !('data-skill' in t.attrs))
+      each(home.html, '#focus-areas svg text')
+        .filter((t) => !('data-focus-area' in t.attrs))
         .map((t) => `${t.attrs.x},${t.attrs.y} ${t.text}`),
-    ).toEqual([
-      '208,165 1y',
-      '208,133 2y',
-      '208,101 3y',
-      '208,69 4y',
-      '208,37 5+',
-    ]);
+    ).toEqual(['208,165 1', '208,133 2', '208,101 3', '208,69 4', '208,37 5']);
     expect(
-      each(home.html, '#skills svg text[data-skill]').map(
+      each(home.html, '#focus-areas svg text[data-focus-area]').map(
         (t) => t.attrs['text-anchor'],
       ),
     ).toEqual([
@@ -489,16 +504,17 @@ describe('start page', () => {
       'end',
       'end',
     ]);
-    // design/danielholzmann-terminal.html: one entry per label line.
+    // design/danielholzmann-terminal.html: one entry per label line; System integration takes Solid.js's slot.
     expect(
-      each(home.html, '#skills svg tspan').map(
+      each(home.html, '#focus-areas svg tspan').map(
         (t) => `${t.attrs.x},${t.attrs.y} ${t.text}`,
       ),
     ).toEqual([
       '200,22 JavaScript / TypeScript',
       '326,74 Node.js',
       '378,205 React',
-      '326,340 Solid.js',
+      '326,331 System',
+      '326,350 integration',
       '200,394 Rust',
       '74,340 AI agents',
       '22,196 Agentic development',
@@ -508,9 +524,9 @@ describe('start page', () => {
     ]);
   });
 
-  test('each skill’s list item, radar label, spoke and dot are linked by the head highlight rules', () => {
-    const items = each(home.html, '#skills li');
-    const indices = items.map((li) => li.attrs['data-skill']);
+  test('each focus area’s list item, radar label, spoke and dot are linked by the head highlight rules', () => {
+    const items = each(home.html, '#focus-areas li');
+    const indices = items.map((li) => li.attrs['data-focus-area']);
     expect(indices.toSorted()).toEqual([
       '0',
       '1',
@@ -521,75 +537,92 @@ describe('start page', () => {
       '6',
       '7',
     ]);
-    // Each list item pairs with the radar label of the same skill, whatever the list order.
-    const labels = each(home.html, '#skills svg text[data-skill]');
-    const names = skillRows(home.screen).map(([name]) => name);
+    // Each list item pairs with the radar label of the same focus area, whatever the list order.
+    const labels = each(home.html, '#focus-areas svg text[data-focus-area]');
+    const names = texts(home.screen, NAMES);
     expect(
       indices.map((i) =>
         labels
-          .find((t) => t.attrs['data-skill'] === i)
+          .find((t) => t.attrs['data-focus-area'] === i)
           ?.text.replace(/\s/g, ''),
       ),
     ).toEqual(names.map((name) => name.replace(/\s/g, '')));
     for (const i of indices)
       for (const tag of ['li', 'text', 'line', 'circle'])
         expect(
-          each(home.html, `#skills ${tag}[data-skill="${i}"]`),
+          each(home.html, `#focus-areas ${tag}[data-focus-area="${i}"]`),
         ).toHaveLength(1);
+    // Each index's dot sits on that axis's level vertex and its spoke ends on that axis's outer ring.
+    const vertices = LEVEL_POLYGON.split(' ');
+    const spokeEnds =
+      '200,40 313.1,86.9 360,200 313.1,313.1 200,360 86.9,313.1 40,200 86.9,86.9'.split(
+        ' ',
+      );
+    for (const i of indices) {
+      const [dot] = each(
+        home.html,
+        `#focus-areas circle[data-focus-area="${i}"]`,
+      );
+      const [spoke] = each(
+        home.html,
+        `#focus-areas line[data-focus-area="${i}"]`,
+      );
+      expect(`${dot.attrs.cx},${dot.attrs.cy}`).toBe(vertices[Number(i)]);
+      expect(`${spoke.attrs.x2},${spoke.attrs.y2}`).toBe(spokeEnds[Number(i)]);
+    }
     const head = home.html.slice(0, home.html.indexOf('</head>'));
     const style = [...head.matchAll(/<style>([^<]*)<\/style>/g)]
       .map((m) => m[1])
       .find((css) => css.includes(':has('));
     // Hovering an item or label, or keyboard focus on an item (not a mouse click: :focus-visible),
-    // lights that skill's label, spoke and dot and swaps its list item to the detail.
+    // lights that focus area's label, spoke and dot and swaps its list item to the experience.
     const active = indices
       .toSorted()
       .map(
         (i) =>
-          `#skills:has(:is(li,text)[data-skill="${i}"]:is(:hover,:focus-visible)) [data-skill="${i}"]`,
+          `#focus-areas:has(:is(li,text)[data-focus-area="${i}"]:is(:hover,:focus-visible)) [data-focus-area="${i}"]`,
       )
       .join(',');
     expect(style).toBe(
       `text:is(${active}){fill:var(--color-accent)}` +
         `line:is(${active}){stroke:var(--color-accent)}` +
         `circle:is(${active}){opacity:1}` +
-        `li:is(${active}) [data-capped]{opacity:0}` +
-        `li:is(${active}) [data-detail]{opacity:1}`,
+        `li:is(${active}) [data-level]{opacity:0}` +
+        `li:is(${active}) [data-experience]{opacity:1}`,
     );
     // The per-item fallback reveals on keyboard focus only, too.
     expect(home.html).not.toContain('group-focus:');
   });
 
-  test('focus order follows the page: skip link, header (logo, nav), each skill item, print button, contact links', () => {
-    // Only skill items carry tabindex, so Tab follows document order; the radar is not focusable.
-    const skillItems = each(home.screen, '#skills li');
+  test('focus order follows the page: skip link, header (logo, nav), each focus area item, print button, contact links', () => {
+    // Only focus area items carry tabindex, so Tab follows document order; the radar is not focusable.
+    const focusAreaItems = each(home.screen, '#focus-areas li');
     expect(each(home.html, '[tabindex]').map((e) => e.attrs)).toEqual(
-      skillItems.map((li) => li.attrs),
+      focusAreaItems.map((li) => li.attrs),
     );
-    expect(skillItems.every((li) => li.attrs.tabindex === '0')).toBe(true);
+    expect(focusAreaItems.every((li) => li.attrs.tabindex === '0')).toBe(true);
     // The contact test pins what the #contact links are; here only their place in the order matters.
     // Print-only links (the CV contact) are display: none on screen, so they never take focus.
     expect(each(home.screen, 'a, button, [tabindex]')).toEqual([
       ...each(home.screen, 'a[href="#main"]'),
       ...each(home.screen, 'header a'),
-      ...skillItems,
+      ...focusAreaItems,
       ...each(home.screen, 'button'),
       ...each(home.screen, '#contact a'),
     ]);
   });
 
-  test('hero and footer count up to the build month', () => {
+  test('hero and footer count up to the build month, career in whole decades', () => {
     const now = new Date();
-    // Career starts with the earliest job (Feb 2006); the current role is the latest ongoing one.
-    const years = yearsSince({ year: 2006, month: 2 }, monthOf(now));
+    // Career starts with the earliest job (Feb 2006): 20 full years from Feb 2026 until Feb 2036.
     // Compressed HTML drops whitespace between blocks, so check each block's text.
     for (const text of [
-      `backed by ${years}+ years of hands-on software engineering.`,
-      `exp: ${years}+ years`,
+      'backed by 20+ years of hands-on software engineering.',
+      'exp: 20+ years',
       'now: Head of Engineering @ Sitelevel.ai',
     ])
       expect(home.text['#top']).toContain(text);
-    expect(meta(home, 'description')).toContain(`${years}+ years`);
+    expect(meta(home, 'description')).toContain('20+ years');
     expect(home.text.footer).toBe(`daniel@portfolio:~$ © ${monthOf(now).year}`);
   });
 
@@ -604,9 +637,9 @@ describe('start page', () => {
   });
 
   describe('printed CV (the start page in print)', () => {
-    test('one DOM for both media: one h1 and one skills section; the degree is in the printed h1 only', () => {
+    test('one DOM for both media: one h1 and one focus areas section; the degree is in the printed h1 only', () => {
       expect(home.html.match(/<h1[\s>]/g)).toHaveLength(1);
-      expect(home.html.match(/\sid="skills"/g)).toHaveLength(1);
+      expect(home.html.match(/\sid="focus-areas"/g)).toHaveLength(1);
       expect(texts(home.screen, 'h1')).toEqual(['Daniel Holzmann']);
       expect(texts(home.print, 'h1')).toEqual(['Daniel Holzmann, BSc']);
       for (const title of [
@@ -620,7 +653,7 @@ describe('start page', () => {
     test('header: photo, kicker, name and title, without the hero’s tagline and chips', () => {
       expect(texts(home.print, '#top p')).toEqual([
         '~/daniel_ · curriculum vitae',
-        'Full-Stack Developer & AI Engineer',
+        'AI Engineer & Full-Stack Developer',
       ]);
       // The screen kicker and the chips are gone (the tagline is excluded by the list above).
       for (const chip of ['location:', 'exp:', 'now:', 'whoami'])
@@ -628,7 +661,7 @@ describe('start page', () => {
       // On screen: the hero's kicker and tagline, without the CV's kicker or title line.
       expect(texts(home.screen, '#top p')).toEqual([
         '$ whoami',
-        `${profile.title}. I build production-grade AI agents and ship software with agentic development workflows — coding agents, backed by ${yearsSince({ year: 2006, month: 2 }, monthOf(new Date()))}+ years of hands-on software engineering.`,
+        `${profile.title}. I build production-grade AI agents and ship software with agentic development workflows — coding agents, backed by 20+ years of hands-on software engineering.`,
       ]);
     });
 
@@ -665,10 +698,10 @@ describe('start page', () => {
       }
     });
 
-    test('sections in print order: aside (contact, skills, education), then profile and experience', () => {
+    test('sections in print order: aside (contact, focus areas, education), then profile and experience', () => {
       expect(texts(home.print, 'h2')).toEqual([
         '## contact',
-        '## skills',
+        '## focus areas',
         '## education',
         '## profile',
         '## experience',
@@ -677,7 +710,7 @@ describe('start page', () => {
 
     test('contact lists the location, then mail, site, LinkedIn and GitHub as bare links', () => {
       expect(texts(home.print, '#cv-contact p')).toEqual([
-        'Austria',
+        'Vienna, Austria',
         'daniel@danielholzmann.com',
         'danielholzmann.com',
         'linkedin.com/in/daniel-holzmann-bb35235b',
@@ -693,40 +726,18 @@ describe('start page', () => {
       ]);
     });
 
-    test('skills in CV order with years capped at 10, then the note', () => {
-      const now = monthOf(new Date());
-      expect(printedSkills(home.print)).toEqual(
-        (
-          [
-            ['Agentic dev workflows', { year: 2025, month: 5 }],
-            ['AI agents', 2024],
-            ['Rust', 2024],
-            ['JavaScript / TypeScript', 2016],
-            ['Engineering leadership', 2015],
-            ['Solid.js', 2025],
-            ['React', 2016],
-            ['Node.js', 2012],
-          ] as [string, Month][]
-        ).map(([name, start]) => [
-          name,
-          yearsLabel(yearsSince(start, now), 10),
-        ]),
+    test('focus areas in the screen order with years capped at 10, then the note', () => {
+      expect(printedFocusAreas(home.print)).toEqual(
+        FOCUS_AREAS.map(([, cvName], i) => [cvName, BUILD_EXPERIENCE[i]]),
       );
-      expect(texts(home.print, '#skills p')).toEqual([
-        'Years of hands-on experience',
+      expect(texts(home.print, '#focus-areas p')).toEqual([
+        'Ordered by focus · years of hands-on experience',
       ]);
-      expect(texts(home.screen, '#skills p')).toEqual([
-        'scale: years of hands-on experience · max 5+',
-      ]);
-      // Print really reorders: every item carries the print variant that turns its --cv-order into `order`.
-      expect(
-        each(home.html, '#skills li').every(({ attrs }) =>
-          attrs.class.split(' ').includes('print:order-(--cv-order)'),
-        ),
-      ).toBe(true);
-      expect(css).toMatch(
-        /\.print\\:order-\\\(--cv-order\\\)\s*\{\s*order:\s*var\(--cv-order\)/,
-      );
+      // Print keeps the DOM order: no item is reordered with CSS `order`.
+      for (const { attrs } of each(home.html, '#focus-areas li')) {
+        expect(attrs.style).toBeUndefined();
+        expect(attrs.class).not.toMatch(/(^|\s)(print:)?order-/);
+      }
     });
 
     test('education prints title, school and period · degree; no languages section while unset', () => {
@@ -739,12 +750,9 @@ describe('start page', () => {
       expect(home.html).not.toMatch(/\[(YEAR|DEGREE|LANGUAGES)\]/);
     });
 
-    test('profile counts exact career and leadership years up to the build month', () => {
-      const now = monthOf(new Date());
-      const career = yearsSince({ year: 2006, month: 2 }, now);
-      const leadership = yearsSince(2015, now);
+    test('profile counts career and leadership years in whole decades', () => {
       expect(texts(home.print, '#about p')).toEqual([
-        `Developer, AI engineer and engineering leader with ${career}+ years of hands-on software engineering and ${leadership}+ years of leading and supporting engineering teams. I build production-grade AI agents and ship software with agentic development workflows: coding agents take on much of the implementation, and I step in myself wherever it counts — architecture, the tricky parts, review, and the call on what goes to production.`,
+        'Developer, AI engineer and engineering leader with 20+ years of hands-on software engineering and 10+ years of leading and supporting engineering teams. I build production-grade AI agents and ship software with agentic development workflows: coding agents take on much of the implementation, and I step in myself wherever it counts — architecture, the tricky parts, review, and the call on what goes to production.',
       ]);
     });
 
@@ -783,8 +791,8 @@ describe('start page', () => {
       for (const screenOnly of [
         'a[href="#main"]',
         'header',
-        '#skills svg',
-        '#skills [aria-hidden]',
+        '#focus-areas svg',
+        '#focus-areas [aria-hidden]',
         '#work li > span',
         '#cv',
         'button',
@@ -798,7 +806,7 @@ describe('start page', () => {
   });
 });
 
-describe('printed CV in Chromium (Playwright)', () => {
+describe('the start page in Chromium (Playwright)', () => {
   let server: Bun.Server<undefined>;
   let browser: Browser;
   beforeAll(async () => {
@@ -822,19 +830,69 @@ describe('printed CV in Chromium (Playwright)', () => {
     server?.stop(true);
   });
 
-  /** The start page in print media, with the web fonts loaded so line breaks match a real print. */
-  async function printPage() {
+  /** The start page in a medium, with the web fonts loaded so text measures as it renders. */
+  async function openPage(media: 'screen' | 'print') {
     const page = await browser.newPage({
       viewport: { width: 794, height: 1123 },
     });
-    await page.emulateMedia({ media: 'print' });
+    await page.emulateMedia({ media });
     await page.goto(server.url.href, { waitUntil: 'networkidle' });
     await page.evaluate(() => document.fonts.ready);
     return page;
   }
 
+  test('every radar label fits inside the radar’s viewBox', async () => {
+    const page = await openPage('screen');
+    const outside = await page.evaluate(() => {
+      const svg = document.querySelector<SVGSVGElement>('#focus-areas svg')!;
+      const box = svg.viewBox.baseVal;
+      return [...svg.querySelectorAll<SVGTextElement>('text')]
+        .filter((text) => {
+          const { x, y, width, height } = text.getBBox();
+          return (
+            x < box.x ||
+            y < box.y ||
+            x + width > box.x + box.width ||
+            y + height > box.y + box.height
+          );
+        })
+        .map((text) => text.textContent);
+    });
+    expect(outside).toEqual([]);
+    await page.close();
+  });
+
+  test('an item shows its level until keyboard focus reveals its experience and lights its radar dot', async () => {
+    const page = await openPage('screen');
+    const opacities = () =>
+      page.evaluate(() =>
+        [...document.querySelectorAll('#focus-areas li')].map((li) => {
+          const axis = li.getAttribute('data-focus-area');
+          const opacity = (el: Element | null) => getComputedStyle(el!).opacity;
+          return [
+            opacity(li.querySelector('[data-level]')),
+            opacity(li.querySelector('[data-experience]')),
+            opacity(
+              document.querySelector(
+                `#focus-areas circle[data-focus-area="${axis}"]`,
+              ),
+            ),
+          ].join(' ');
+        }),
+      );
+    // Level shown, experience and dot hidden: [level, experience, dot] opacity per item.
+    expect(await opacities()).toEqual(Array(8).fill('1 0 0'));
+    // Tab from Engineering leadership onto System integration.
+    await page.locator('#focus-areas li').nth(4).focus();
+    await page.keyboard.press('Tab');
+    expect(await opacities()).toEqual(
+      Array.from({ length: 8 }, (_, i) => (i === 5 ? '0 1 1' : '1 0 0')),
+    );
+    await page.close();
+  });
+
   test('the CV fits its A4 canvas: nothing overflows the page or its box', async () => {
-    const page = await printPage();
+    const page = await openPage('print');
     const { scrollHeight, overflowing } = await page.evaluate(() => {
       const canvas = document.querySelector('.page')!;
       const bottom = canvas.getBoundingClientRect().bottom;
@@ -861,7 +919,7 @@ describe('printed CV in Chromium (Playwright)', () => {
   });
 
   test('printing gives exactly one A4 page', async () => {
-    const page = await printPage();
+    const page = await openPage('print');
     const pdf = new TextDecoder('latin1').decode(
       await page.pdf({ preferCSSPageSize: true, printBackground: true }),
     );
@@ -882,19 +940,19 @@ describe('start page built at a later month', () => {
   let later: Page;
   beforeAll(async () => {
     laterDir = mkdtempSync(join(tmpdir(), 'site-build-later-'));
-    build(laterDir, '2029-07-15T12:00:00Z');
+    build(laterDir, '2036-07-15T12:00:00Z');
     later = await page('index.html', laterDir);
   }, 60_000);
 
   afterAll(() => rmSync(laterDir, { recursive: true, force: true }));
 
   test('every derived number counts up to that month, none is typed in', () => {
-    // Jul 2029: career since Feb 2006 = 23 full years, leadership since Jan 2015 = 14.
-    for (const text of ['backed by 23+ years', 'exp: 23+ years'])
+    // Jul 2036: career since Feb 2006 = 30 full years, leadership since Jan 2015 = 21 → 20+.
+    for (const text of ['backed by 30+ years', 'exp: 30+ years'])
       expect(later.text['#top']).toContain(text);
-    expect(meta(later, 'description')).toContain('23+ years');
-    expect(later.text['#about']).toContain('14+ years of leading');
-    expect(later.text.footer).toBe('daniel@portfolio:~$ © 2029');
+    expect(meta(later, 'description')).toContain('30+ years');
+    expect(later.text['#about']).toContain('20+ years of leading');
+    expect(later.text.footer).toBe('daniel@portfolio:~$ © 2036');
     // Finished jobs keep their length; ongoing ones stay "present".
     expect(texts(later.screen, '#work li > p:first-of-type')).toEqual([
       'Mar 2025 — present',
@@ -903,44 +961,36 @@ describe('start page built at a later month', () => {
       'Feb 2011 — 5 yrs',
       'Feb 2006 — present',
     ]);
-    // Skills pass their caps at different months; between them the detail is exact. Bars and radar stop at 5.
-    expect(skillRows(later.screen)).toEqual([
-      ['AI agents', '5+ yrs', '5 yrs', 'width: 100%'],
-      ['Agentic development workflows', '4 yrs', '4 yrs', 'width: 80%'],
-      ['JavaScript / TypeScript', '5+ yrs', '10+ yrs', 'width: 100%'],
-      ['Node.js', '5+ yrs', '10+ yrs', 'width: 100%'],
-      ['React', '5+ yrs', '10+ yrs', 'width: 100%'],
-      ['Solid.js', '4 yrs', '4 yrs', 'width: 80%'],
-      ['Rust', '5+ yrs', '5 yrs', 'width: 100%'],
-      ['Engineering leadership', '5+ yrs', '10+ yrs', 'width: 100%'],
+    // Every experience has passed the 10 cap; levels, bars, order and the radar stay put.
+    expect(focusAreaRows(later.screen)).toEqual([
+      ['AI agents', '5/5', '10+ yrs', 'width: 100%'],
+      ['Agentic development workflows', '5/5', '10+ yrs', 'width: 100%'],
+      ['JavaScript / TypeScript', '4/5', '10+ yrs', 'width: 80%'],
+      ['Rust', '4/5', '10+ yrs', 'width: 80%'],
+      ['Engineering leadership', '4/5', '10+ yrs', 'width: 80%'],
+      ['System integration', '3/5', '10+ yrs', 'width: 60%'],
+      ['Node.js', '3/5', '10+ yrs', 'width: 60%'],
+      ['React', '2/5', '10+ yrs', 'width: 40%'],
     ]);
-    // Vertices on ring 4 for Solid.js and Agentic, on the outer ring for the rest; dots on the vertices.
-    const polygon =
-      '200,40 313.1,86.9 360,200 290.5,290.5 200,360 86.9,313.1 72,200 86.9,86.9';
-    expect(
-      each(later.html, '#skills svg > polygon').map((p) => p.attrs.points),
-    ).toEqual([polygon]);
-    expect(
-      each(later.html, '#skills circle')
-        .map(({ attrs }) => `${attrs.cx},${attrs.cy}`)
-        .join(' '),
-    ).toBe(polygon);
+    expect(radarShape(later.html)).toEqual({
+      polygon: [LEVEL_POLYGON],
+      dots: LEVEL_POLYGON,
+    });
   });
 
   test('the printed CV counts up to that month too', () => {
     expect(texts(later.print, '#about p')[0]).toStartWith(
-      'Developer, AI engineer and engineering leader with 23+ years of hands-on software engineering and 14+ years of leading',
+      'Developer, AI engineer and engineering leader with 30+ years of hands-on software engineering and 20+ years of leading',
     );
-    // Under 10 years shows exactly; JS/TS, leadership, React and Node.js passed the 10 cap.
-    expect(printedSkills(later.print)).toEqual([
-      ['Agentic dev workflows', '4 yrs'],
-      ['AI agents', '5 yrs'],
-      ['Rust', '5 yrs'],
+    expect(printedFocusAreas(later.print)).toEqual([
+      ['AI agents', '10+ yrs'],
+      ['Agentic dev workflows', '10+ yrs'],
       ['JavaScript / TypeScript', '10+ yrs'],
+      ['Rust', '10+ yrs'],
       ['Engineering leadership', '10+ yrs'],
-      ['Solid.js', '4 yrs'],
-      ['React', '10+ yrs'],
+      ['System integration', '10+ yrs'],
       ['Node.js', '10+ yrs'],
+      ['React', '10+ yrs'],
     ]);
   });
 });

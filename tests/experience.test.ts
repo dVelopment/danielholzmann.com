@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test';
 import { careerYearsAt, jobs } from '../src/data/jobs';
-import { skills } from '../src/data/skills';
+import { focusAreas } from '../src/data/focus-areas';
 import {
-  cappedYears,
   compareMonths,
   durationLabel,
+  floorToDecade,
   formatMonth,
   formatMonthNumeric,
   type Month,
@@ -65,13 +65,15 @@ describe('yearsLabel', () => {
     expect(yearsLabel(1, 5)).toBe('1 yr');
     expect(yearsLabel(0, 5)).toBe('<1 yr');
   });
+});
 
-  test('cappedYears is the label without its unit', () => {
-    expect(cappedYears(0, 5)).toBe('<1');
-    expect(cappedYears(1, 5)).toBe('1');
-    expect(cappedYears(4, 5)).toBe('4');
-    expect(cappedYears(5, 5)).toBe('5+');
-    expect(cappedYears(14, 5)).toBe('5+');
+describe('floorToDecade', () => {
+  test('rounds full years down to whole decades', () => {
+    expect(floorToDecade(10)).toBe(10);
+    expect(floorToDecade(11)).toBe(10);
+    expect(floorToDecade(19)).toBe(10);
+    expect(floorToDecade(20)).toBe(20);
+    expect(floorToDecade(21)).toBe(20);
   });
 });
 
@@ -102,7 +104,7 @@ describe('durationLabel', () => {
 
 describe('content data', () => {
   test('every start and end month is valid and no job ends before it starts', () => {
-    for (const { start } of skills)
+    for (const { start } of focusAreas)
       expect(() => formatMonth(start)).not.toThrow();
     for (const { start, end } of jobs)
       expect(() => durationLabel(start, end ?? start)).not.toThrow();
