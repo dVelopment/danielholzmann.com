@@ -708,13 +708,14 @@ describe('start page', () => {
       ]);
     });
 
-    test('contact lists the location, then mail, site, LinkedIn and GitHub as bare links', () => {
+    test('contact lists the location, then mail, site, LinkedIn, GitHub and Mastodon as bare links, each with a decorative icon', () => {
       expect(texts(home.print, '#cv-contact p')).toEqual([
         'Vienna, Austria',
         'daniel@danielholzmann.com',
         'danielholzmann.com',
         'linkedin.com/in/daniel-holzmann-bb35235b',
         'github.com/dVelopment',
+        'wien.rocks/@dVelopment',
       ]);
       expect(
         each(home.print, '#cv-contact a').map(({ attrs }) => attrs.href),
@@ -723,7 +724,11 @@ describe('start page', () => {
         profile.siteUrl,
         social.linkedin,
         social.github,
+        social.mastodon,
       ]);
+      const icons = each(home.print, '#cv-contact p > svg');
+      expect(icons).toHaveLength(6);
+      for (const { attrs } of icons) expect(attrs['aria-hidden']).toBe('true');
     });
 
     test('skills in the screen order with years capped at 10, then the note', () => {
