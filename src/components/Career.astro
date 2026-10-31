@@ -29,7 +29,7 @@ import TextPair from "./TextPair.astro";
           <h3 class="mt-1.5 mb-1 text-[20px] font-bold text-fg-strong print:col-start-1 print:row-start-1 print:m-0 print:text-[14.5px] print:text-ink">
             <TextPair screen={job.role} print={job.cvRole} /> · {job.company}
           </h3>
-          <p class="font-sans text-[16px] text-prose-muted print:col-span-2 print:text-[13px] print:text-ink-soft">
+          <p class="font-sans text-[16px] text-prose-muted print:col-span-2 print:text-justify print:text-[13px] print:text-ink-soft">
             {job.summary}
           </p>
           {job.stack && (
