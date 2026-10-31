@@ -8,5 +8,8 @@ export default defineConfig({
   integrations: [sitemap()],
   vite: {
     plugins: [tailwindcss()],
+    // .devenv/profile links into the Nix store, whose macOS SDK headers
+    // contain symlink loops (ncursesw ↔ ncurses) that flood the watcher.
+    server: { watch: { ignored: ['**/.devenv/**', '**/.direnv/**'] } },
   },
 });

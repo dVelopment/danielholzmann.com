@@ -16,11 +16,11 @@ export interface Profile {
 export const profile: Profile = {
   name: 'Daniel Holzmann',
   cvNameSuffix: ', BSc',
-  title: 'Full-Stack Developer & AI Engineer',
-  location: 'Austria',
+  title: 'AI Engineer & Full-Stack Developer',
+  location: 'Vienna, Austria',
   email: 'daniel@danielholzmann.com',
   siteUrl: 'https://danielholzmann.com',
-  description: `Daniel Holzmann, full-stack developer and AI engineer: production-grade AI agents, agentic development workflows and ${careerYears}+ years of hands-on software engineering.`,
+  description: `Daniel Holzmann, AI engineer and full-stack developer: production-grade AI agents, agentic development workflows and ${careerYears}+ years of hands-on software engineering.`,
   keywords: [
     'daniel holzmann',
     'ai engineer',
