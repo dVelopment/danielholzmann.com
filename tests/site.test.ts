@@ -80,8 +80,8 @@ const normalize = (raw: string) => decode(raw).replace(/\s+/g, ' ').trim();
 
 /**
  * The page as one medium shows it: `html` without the elements that medium hides. Screen drops Tailwind's
- * `hidden`. Print drops `print:hidden`, `hidden` unless `print:block`, `print:inline` or `print:flex` shows it
- * again, and `opacity-0` unless `print:opacity-100` (on screen, `opacity-0` text stays: screen readers get it).
+ * `hidden`. Print drops `print:hidden`, and `hidden` unless `print:block`, `print:inline` or `print:flex` shows it
+ * again.
  */
 function view(html: string, medium: 'screen' | 'print') {
   return new HTMLRewriter()
@@ -96,8 +96,7 @@ function view(html: string, medium: 'screen' | 'print') {
           medium === 'screen'
             ? has('hidden')
             : has('print:hidden') ||
-              (has('hidden') && !has(/^print:(block|inline|flex)$/)) ||
-              (has('opacity-0') && !has('print:opacity-100'));
+              (has('hidden') && !has(/^print:(block|inline|flex)$/));
         if (hidden) el.remove();
       },
     })
