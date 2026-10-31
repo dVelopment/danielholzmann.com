@@ -644,9 +644,13 @@ describe('start page', () => {
       const candidates = attrs.srcset
         .split(',')
         .map((c) => c.trim().split(/\s+/));
-      expect(candidates.map(([, density]) => density)).toContain('1x');
+      // The 1200×1600 portrait fills the box three times over.
+      expect(candidates.map(([, density]) => density)).toEqual([
+        '1x',
+        '2x',
+        '3x',
+      ]);
       for (const [url, density] of candidates) {
-        expect(['1x', '2x', '3x']).toContain(density);
         await expectServed(url);
         const scale = Number.parseInt(density);
         const { width, height, format } = await imageMetadata(
@@ -724,10 +728,11 @@ describe('start page', () => {
       );
     });
 
-    test('education leaves unset period and degree off, and there is no languages section while unset', () => {
+    test('education prints title, school and period · degree; no languages section while unset', () => {
       expect(texts(home.print, '#cv-education p')).toEqual([
         'Software Engineering',
         'University of Applied Sciences Upper Austria, Hagenberg',
+        '2011 — 2015 · BSc in Engineering',
       ]);
       expect(each(home.html, '#cv-languages')).toEqual([]);
       expect(home.html).not.toMatch(/\[(YEAR|DEGREE|LANGUAGES)\]/);

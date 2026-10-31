@@ -55,6 +55,8 @@ export const education: readonly Education[] = [
   {
     title: 'Software Engineering',
     school: 'University of Applied Sciences Upper Austria, Hagenberg',
+    period: '2011 — 2015',
+    degree: 'BSc in Engineering',
   },
 ];
 
