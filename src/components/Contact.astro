@@ -9,7 +9,7 @@ const links = [
 ];
 ---
 
-<section id="contact" aria-labelledby="contact-h" class="flex flex-col gap-6 py-24">
+<section id="contact" aria-labelledby="contact-h" class="flex flex-col gap-6 py-24 print:hidden">
   <SectionHeading id="contact-h">connect</SectionHeading>
   <a href={`mailto:${profile.email}`} class="text-[clamp(24px,3.4vw,44px)] font-bold text-fg-strong">
     {profile.email}<span aria-hidden="true" class="text-accent">_</span>

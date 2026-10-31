@@ -1,0 +1,16 @@
+---
+/** Print-only contact block of the CV; the screen has its own (Contact.astro). */
+import { bareUrl, profile, social } from "../data/profile";
+import SectionHeading from "./SectionHeading.astro";
+
+const links = [
+  { href: `mailto:${profile.email}`, label: profile.email },
+  ...[profile.siteUrl, social.linkedin, social.github].map((href) => ({ href, label: bareUrl(href) })),
+];
+---
+
+<section id="cv-contact" class="hidden flex-col gap-2 print:flex">
+  <SectionHeading>contact</SectionHeading>
+  <p>{profile.location}</p>
+  {links.map(({ href, label }) => <p><a href={href}>{label}</a></p>)}
+</section>

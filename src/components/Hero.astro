@@ -1,19 +1,47 @@
 ---
+/** Hero on screen; the CV header (photo, kicker, name, title) in print. */
+import { Image } from "astro:assets";
+import avatar from "../images/avatar.jpg";
 import { careerYears, currentJob } from "../data/jobs";
 import { profile } from "../data/profile";
+import { fillableDensities } from "../lib/image";
+import TextPair from "./TextPair.astro";
+
+/** CV photo box in CSS px; the `h-[140px] w-[112px]` classes below must match. */
+const PHOTO = { width: 112, height: 140 };
 ---
 
-<section id="top" class="flex flex-col gap-7 pt-[clamp(56px,9vw,120px)] pb-[clamp(56px,8vw,100px)]">
-  <p class="text-sm text-muted">$ whoami</p>
-  <h1 class="text-[clamp(44px,7vw,96px)] leading-none font-bold tracking-[-0.03em] text-fg-strong">
-    {profile.name}
-  </h1>
-  <p class="max-w-[680px] font-sans text-[clamp(18px,1.8vw,24px)] leading-normal text-prose-muted">
-    {profile.title}. I build production-grade AI agents and ship software with agentic development workflows — coding agents, backed by {careerYears}+ years of hands-on software engineering.
-  </p>
-  <div class="flex flex-wrap gap-3 text-[13px]">
-    <span class="rounded-md border border-line px-3 py-2">location: {profile.location}</span>
-    <span class="rounded-md border border-line px-3 py-2">exp: {careerYears}+ years</span>
-    <span class="rounded-md border border-line px-3 py-2 text-accent">now: {currentJob.role} @ {currentJob.company}</span>
+<section
+  id="top"
+  class="flex flex-col gap-7 pt-[clamp(56px,9vw,120px)] pb-[clamp(56px,8vw,100px)] print:flex-row print:items-end print:border-b-[1.5px] print:border-ink print:pt-0 print:pb-6"
+>
+  {/* Eager: hidden on screen, but it must be loaded by the time the page prints. */}
+  <Image
+    src={avatar}
+    alt={`Portrait of ${profile.name}`}
+    width={PHOTO.width}
+    height={PHOTO.height}
+    densities={fillableDensities(avatar, PHOTO)}
+    loading="eager"
+    class="hidden box-content h-[140px] w-[112px] flex-none border border-photo-border bg-photo-bg object-cover print:block"
+  />
+  <div class="contents print:flex print:flex-1 print:flex-col print:gap-1.5">
+    <p class="text-sm text-muted print:font-mono print:text-xs print:text-print-accent">
+      <TextPair screen="$ whoami" print="~/daniel_ · curriculum vitae" />
+    </p>
+    <h1
+      class="text-[clamp(44px,7vw,96px)] leading-none font-bold tracking-[-0.03em] text-fg-strong print:text-[40px] print:leading-[1.05] print:tracking-[-0.02em] print:text-ink"
+    >
+      {profile.name}{profile.cvNameSuffix && <span class="hidden print:inline">{profile.cvNameSuffix}</span>}
+    </h1>
+    <p class="hidden text-[16px] font-medium text-ink-soft print:block">{profile.title}</p>
+    <p class="max-w-[680px] font-sans text-[clamp(18px,1.8vw,24px)] leading-normal text-prose-muted print:hidden">
+      {profile.title}. I build production-grade AI agents and ship software with agentic development workflows — coding agents, backed by {careerYears}+ years of hands-on software engineering.
+    </p>
+    <div class="flex flex-wrap gap-3 text-[13px] print:hidden">
+      <span class="rounded-md border border-line px-3 py-2">location: {profile.location}</span>
+      <span class="rounded-md border border-line px-3 py-2">exp: {careerYears}+ years</span>
+      <span class="rounded-md border border-line px-3 py-2 text-accent">now: {currentJob.role} @ {currentJob.company}</span>
+    </div>
   </div>
 </section>

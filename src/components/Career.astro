@@ -1,30 +1,37 @@
 ---
+/** Career timeline on screen; the CV's experience list in print (role · company left, dates right). */
 import { currentJob, jobs } from "../data/jobs";
-import { durationLabel, formatMonth } from "../lib/experience";
+import { durationLabel, formatMonth, formatMonthNumeric } from "../lib/experience";
 import SectionHeading from "./SectionHeading.astro";
+import TextPair from "./TextPair.astro";
 ---
 
-<section id="work" aria-labelledby="work-h" class="flex flex-col gap-6 pt-24">
-  <SectionHeading id="work-h">git log --career</SectionHeading>
+<section id="work" aria-labelledby="work-h" class="flex flex-col gap-6 pt-24 print:gap-3.5 print:pt-0">
+  <SectionHeading id="work-h"><TextPair screen="git log --career" print="experience" /></SectionHeading>
   {/* role="list": WebKit drops list semantics from unstyled lists. */}
-  <ol role="list" class="flex flex-col border-l border-line">
+  <ol role="list" class="flex flex-col border-l border-line print:contents">
     {
       jobs.map((job) => (
-        <li class="relative pb-8 pl-7 last:pb-0">
+        <li class="relative pb-8 pl-7 last:pb-0 print:grid print:grid-cols-[1fr_auto] print:items-baseline print:gap-x-3 print:gap-y-[3px] print:p-0">
           <span
             aria-hidden="true"
             class:list={[
-              "absolute top-1.5 -left-[5px] size-[9px] rounded-full",
+              "absolute top-1.5 -left-[5px] size-[9px] rounded-full print:hidden",
               job === currentJob ? "bg-accent" : "bg-line-strong",
             ]}
           />
-          <p class="text-xs text-muted">
-            {formatMonth(job.start)} — {job.end ? durationLabel(job.start, job.end) : "present"}
+          <p class="text-xs text-muted print:col-start-2 print:row-start-1 print:font-mono print:whitespace-nowrap print:text-ink-muted">
+            <TextPair
+              screen={`${formatMonth(job.start)} — ${job.end ? durationLabel(job.start, job.end) : "present"}`}
+              print={`${formatMonthNumeric(job.start)} — ${job.end ? formatMonthNumeric(job.end) : "present"}`}
+            />
           </p>
-          <h3 class="mt-1.5 mb-1 text-[20px] font-bold text-fg-strong">
-            {job.role} · {job.company}
+          <h3 class="mt-1.5 mb-1 text-[20px] font-bold text-fg-strong print:col-start-1 print:row-start-1 print:m-0 print:text-[14.5px] print:text-ink">
+            <TextPair screen={job.role} print={job.cvRole} /> · {job.company}
           </h3>
-          <p class="font-sans text-[16px] text-prose-muted">{job.summary}</p>
+          <p class="font-sans text-[16px] text-prose-muted print:col-span-2 print:text-[13px] print:text-ink-soft">
+            <TextPair screen={job.summary} print={job.cvSummary} />
+          </p>
         </li>
       ))
     }

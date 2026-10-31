@@ -52,11 +52,11 @@ export const listSkills: readonly Skill[] = [
 /** Full years of leading teams, as in the about text ("N+ years"). */
 export const leadershipYears = yearsSince(leadership.start, buildMonth);
 
-/** Cap for the hover/focus detail duration (`10+ yrs`); the printed CV (#33) will use it too. */
+/** Cap for the hover/focus detail duration and the printed CV (`10+ yrs`). */
 export const DETAIL_CAP = 10;
 
 /**
- * Skill order for the printed CV (#33): featured skills first, then the rest; within each, the most recently
+ * Skill order for the printed CV: featured skills first, then the rest; within each, the most recently
  * started first; ties by name A→Z. Depends on the data only, so the order never reshuffles as durations grow.
  */
 export function cvOrder(list: readonly Skill[]): Skill[] {
@@ -67,3 +67,6 @@ export function cvOrder(list: readonly Skill[]): Skill[] {
       a.name.localeCompare(b.name, 'en'),
   );
 }
+
+/** Printed CV order of `skills`. */
+export const cvSkills: readonly Skill[] = cvOrder(skills);

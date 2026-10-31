@@ -1,4 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
+import { chromium, type Browser } from 'playwright';
+import { imageMetadata } from 'astro/assets/utils';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -16,7 +18,14 @@ import { profile, social } from '../src/data/profile';
 // Builds the real site and checks what browsers, crawlers and link previews get.
 
 type Tag = Record<string, string>;
-type Page = { html: string; tags: Tag[]; text: Record<string, string> };
+/** `html` as built; `screen` and `print` without the elements that medium hides; `text` read from `screen`. */
+type Page = {
+  html: string;
+  screen: string;
+  print: string;
+  tags: Tag[];
+  text: Record<string, string>;
+};
 
 const TEXT_SELECTORS = [
   'title',
@@ -71,9 +80,36 @@ const attributes = (el: HTMLRewriterTypes.Element): Tag =>
   Object.fromEntries([...el.attributes].map(([k, v]) => [k, decode(v)]));
 const normalize = (raw: string) => decode(raw).replace(/\s+/g, ' ').trim();
 
-/** Parses a built page: every meta/link tag, plus the whitespace-normalized text of TEXT_SELECTORS. */
+/**
+ * The page as one medium shows it: `html` without the elements that medium hides. Screen drops Tailwind's
+ * `hidden`. Print drops `print:hidden`, `hidden` unless `print:block`, `print:inline` or `print:flex` shows it
+ * again, and `opacity-0` unless `print:opacity-100` (on screen, `opacity-0` text stays: screen readers get it).
+ */
+function view(html: string, medium: 'screen' | 'print') {
+  return new HTMLRewriter()
+    .on('[class]', {
+      element(el) {
+        const classes = el.getAttribute('class')!.split(/\s+/);
+        const has = (name: string | RegExp) =>
+          classes.some((c) =>
+            typeof name === 'string' ? c === name : name.test(c),
+          );
+        const hidden =
+          medium === 'screen'
+            ? has('hidden')
+            : has('print:hidden') ||
+              (has('hidden') && !has(/^print:(block|inline|flex)$/)) ||
+              (has('opacity-0') && !has('print:opacity-100'));
+        if (hidden) el.remove();
+      },
+    })
+    .transform(html);
+}
+
+/** Parses a built page: every meta/link tag, plus the whitespace-normalized screen text of TEXT_SELECTORS. */
 async function page(path: string, dir = outDir): Promise<Page> {
   const html = await file(path, dir).text();
+  const screen = view(html, 'screen');
   const tags: Tag[] = [];
   const text: Record<string, string> = {};
   const rewriter = new HTMLRewriter().on('meta, link', {
@@ -88,9 +124,9 @@ async function page(path: string, dir = outDir): Promise<Page> {
       },
     });
   }
-  rewriter.transform(html);
+  rewriter.transform(screen);
   for (const key in text) text[key] = normalize(text[key]);
-  return { html, tags, text };
+  return { html, screen, print: view(html, 'print'), tags, text };
 }
 
 /** Every element matching `selector`, in document order, with its attributes and normalized text. Matches must not nest. */
@@ -129,19 +165,34 @@ beforeAll(() => {
 
 afterAll(() => rmSync(outDir, { recursive: true, force: true }));
 
+const texts = (html: string, selector: string) =>
+  each(html, selector).map((m) => m.text);
+
 /** Each skill list item as [name, capped label, detail label, bar style]. */
 function skillRows(html: string) {
-  const texts = (selector: string) =>
-    each(html, `#skills li ${selector}`).map((m) => m.text);
-  const capped = texts('[data-capped]');
-  const detail = texts('[data-detail]');
+  const capped = texts(html, '#skills li [data-capped]');
+  const detail = texts(html, '#skills li [data-detail]');
   const bars = each(html, '#skills li div[style]').map((m) => m.attrs.style);
-  return texts('> div > span:first-child').map((name, i) => [
+  return texts(html, '#skills li > div > span:first-child').map((name, i) => [
     name,
     capped[i],
     detail[i],
     bars[i],
   ]);
+}
+
+/** The printed CV's skills as [name, years], in the order print shows them (CSS `order` from `--cv-order`). */
+function printedSkills(print: string) {
+  const names = texts(print, '#skills li > div > span:first-child');
+  const years = texts(print, '#skills li [data-detail]');
+  const order = each(print, '#skills li').map(({ attrs }) =>
+    Number(attrs.style.match(/--cv-order:\s*(\d+)/)?.[1]),
+  );
+  expect(order.toSorted((a, b) => a - b)).toEqual(names.map((_, i) => i));
+  return names
+    .map((name, i) => ({ row: [name, years[i]], at: order[i] }))
+    .toSorted((a, b) => a.at - b.at)
+    .map(({ row }) => row);
 }
 
 describe('start page', () => {
@@ -202,10 +253,21 @@ describe('start page', () => {
     for (const icon of manifest.icons) await expectServed(icon.src);
   });
 
-  test('site stylesheet carries the terminal tokens, focus ring and A4 page', async () => {
+  test('site stylesheet carries the terminal tokens, focus ring, A4 page and print links', async () => {
     expect(css).toContain('@page');
     expect(css).toMatch(/size:\s*A4/);
-    expect(css).toContain(':focus-visible');
+    // Keyboard focus: a 2px accent ring on screen.
+    expect(css).toMatch(
+      /:focus-visible\s*\{[^}]*outline-width:\s*2px[^}]*outline-color:\s*var\(--color-accent\)/,
+    );
+    // A skill item still focused when printing doesn't put the ring on the CV.
+    expect(css).toMatch(
+      /@media print\s*\{\s*:focus-visible\s*\{[^}]*outline-style:\s*none/,
+    );
+    // Printed links are underlined in ink, as in the CV design (the reset strips the underline).
+    expect(css).toMatch(
+      /@media print\s*\{\s*a\s*\{\s*color:\s*var\(--color-ink\);\s*text-decoration-line:\s*underline/,
+    );
     const background = css.match(/--color-background:\s*(#[0-9a-f]{6})/i)?.[1];
     expect(background).toBeDefined();
 
@@ -247,7 +309,7 @@ describe('start page', () => {
   });
 
   test('section headings follow the design, in page order', () => {
-    expect(each(home.html, 'h2').map((h) => h.text)).toEqual([
+    expect(texts(home.screen, 'h2')).toEqual([
       '## skills --years',
       '## about',
       '## git log --career',
@@ -260,40 +322,38 @@ describe('start page', () => {
     // A literal, not `leadershipYears`, so the test doesn't check the code against itself:
     // leadership starts with the "Engineering leadership" skill (2015, i.e. Jan 2015).
     const years = yearsSince(2015, monthOf(new Date()));
-    expect(each(home.html, '#about p').map((p) => p.text)).toEqual([
+    expect(texts(home.screen, '#about p')).toEqual([
       'I started coding for fun as a teenager — it grew into my main occupation. At 30, after years of autodidact training, I studied Software Engineering at the University of Applied Sciences Upper Austria in Hagenberg.',
       `${years}+ years of leading and supporting engineering teams. Today I build AI agents for production and work hands-on with coding agents in agentic development workflows.`,
     ]);
   });
 
   test('career timeline lists every job newest first, marking the current one', () => {
-    expect(
-      each(home.html, '#work li > p:first-of-type').map((p) => p.text),
-    ).toEqual([
+    expect(texts(home.screen, '#work li > p:first-of-type')).toEqual([
       'Mar 2025 — present',
       'May 2018 — 6 yrs 10 mos',
       'Jan 2017 — 1 yr 3 mos',
       'Feb 2011 — 5 yrs',
       'Feb 2006 — present',
     ]);
-    expect(each(home.html, '#work h3').map((h) => h.text)).toEqual([
+    expect(texts(home.screen, '#work h3')).toEqual([
       'Head of Engineering · Sitelevel.ai',
       'Principal Software Architect · Bond Vet',
       'Lead Developer · Veho Technologies',
       'Lead Developer · atipso',
       'Freelance · danielholzmann.com',
     ]);
-    expect(
-      each(home.html, '#work li > p:nth-of-type(2)').map((p) => p.text),
-    ).toEqual(jobs.map((job) => job.summary));
-    const dots = each(home.html, '#work li > span').map((s) =>
+    expect(texts(home.screen, '#work li > p:nth-of-type(2)')).toEqual(
+      jobs.map((job) => job.summary),
+    );
+    const dots = each(home.screen, '#work li > span').map((s) =>
       s.attrs.class.split(' ').includes('bg-accent'),
     );
     expect(dots).toEqual([true, false, false, false, false]);
   });
 
   test('the print callout’s button is the only script and hides without JavaScript', () => {
-    expect(each(home.html, '#cv p').map((p) => p.text)).toEqual([
+    expect(texts(home.html, '#cv p')).toEqual([
       'Need a classic CV for HR? Just print this page — a print stylesheet recompiles it into a one-page résumé. No PDF to download: the PDF is a build artifact.',
     ]);
     expect(home.html.match(/onclick=/g)).toEqual(['onclick=']);
@@ -354,7 +414,7 @@ describe('start page', () => {
     ).map(([name, start]) => [name, yearsSince(start, now)] as const);
     // List order: AI agents and Agentic lead; the rest follow the radar.
     const listOrder = [5, 6, 0, 1, 2, 3, 4, 7];
-    expect(skillRows(home.html)).toEqual(
+    expect(skillRows(home.screen)).toEqual(
       listOrder.map((i) => {
         const [name, years] = skillYears[i];
         return [
@@ -463,7 +523,7 @@ describe('start page', () => {
     ]);
     // Each list item pairs with the radar label of the same skill, whatever the list order.
     const labels = each(home.html, '#skills svg text[data-skill]');
-    const names = skillRows(home.html).map(([name]) => name);
+    const names = skillRows(home.screen).map(([name]) => name);
     expect(
       indices.map((i) =>
         labels
@@ -502,16 +562,19 @@ describe('start page', () => {
 
   test('focus order follows the page: skip link, header (logo, nav), each skill item, print button, contact links', () => {
     // Only skill items carry tabindex, so Tab follows document order; the radar is not focusable.
-    const skillItems = each(home.html, '#skills li');
-    expect(each(home.html, '[tabindex]')).toEqual(skillItems);
+    const skillItems = each(home.screen, '#skills li');
+    expect(each(home.html, '[tabindex]').map((e) => e.attrs)).toEqual(
+      skillItems.map((li) => li.attrs),
+    );
     expect(skillItems.every((li) => li.attrs.tabindex === '0')).toBe(true);
     // The contact test pins what the #contact links are; here only their place in the order matters.
-    expect(each(home.html, 'a, button, [tabindex]')).toEqual([
-      ...each(home.html, 'a[href="#main"]'),
-      ...each(home.html, 'header a'),
+    // Print-only links (the CV contact) are display: none on screen, so they never take focus.
+    expect(each(home.screen, 'a, button, [tabindex]')).toEqual([
+      ...each(home.screen, 'a[href="#main"]'),
+      ...each(home.screen, 'header a'),
       ...skillItems,
-      ...each(home.html, 'button'),
-      ...each(home.html, '#contact a'),
+      ...each(home.screen, 'button'),
+      ...each(home.screen, '#contact a'),
     ]);
   });
 
@@ -539,6 +602,279 @@ describe('start page', () => {
   test('ships no <script> elements', () => {
     expect(home.html).not.toContain('<script');
   });
+
+  describe('printed CV (the start page in print)', () => {
+    test('one DOM for both media: one h1 and one skills section; the degree is in the printed h1 only', () => {
+      expect(home.html.match(/<h1[\s>]/g)).toHaveLength(1);
+      expect(home.html.match(/\sid="skills"/g)).toHaveLength(1);
+      expect(texts(home.screen, 'h1')).toEqual(['Daniel Holzmann']);
+      expect(texts(home.print, 'h1')).toEqual(['Daniel Holzmann, BSc']);
+      for (const title of [
+        home.text.title,
+        meta(home, 'og:title'),
+        meta(home, 'twitter:title'),
+      ])
+        expect(title).not.toContain('BSc');
+    });
+
+    test('header: photo, kicker, name and title, without the hero’s tagline and chips', () => {
+      expect(texts(home.print, '#top p')).toEqual([
+        '~/daniel_ · curriculum vitae',
+        'Full-Stack Developer & AI Engineer',
+      ]);
+      // The screen kicker and the chips are gone (the tagline is excluded by the list above).
+      for (const chip of ['location:', 'exp:', 'now:', 'whoami'])
+        expect(texts(home.print, '#top').join()).not.toContain(chip);
+      // On screen: the hero's kicker and tagline, without the CV's kicker or title line.
+      expect(texts(home.screen, '#top p')).toEqual([
+        '$ whoami',
+        `${profile.title}. I build production-grade AI agents and ship software with agentic development workflows — coding agents, backed by ${yearsSince({ year: 2006, month: 2 }, monthOf(new Date()))}+ years of hands-on software engineering.`,
+      ]);
+    });
+
+    test('the photo prints from crops of at most 3x the 112×140 box and never shows on screen', async () => {
+      const images = each(home.html, 'img');
+      expect(images).toHaveLength(1);
+      expect(each(home.screen, 'img')).toEqual([]);
+      expect(each(home.print, 'img')).toEqual(images);
+      const [{ attrs }] = images;
+      expect(attrs.alt).toBe(`Portrait of ${profile.name}`);
+      // Hidden on screen, so it must not wait for scrolling into view to be there when printing.
+      expect(attrs.loading).toBe('eager');
+      expect([attrs.width, attrs.height]).toEqual(['112', '140']);
+      const candidates = attrs.srcset
+        .split(',')
+        .map((c) => c.trim().split(/\s+/));
+      // The 1200×1600 portrait fills the box three times over.
+      expect(candidates.map(([, density]) => density)).toEqual([
+        '1x',
+        '2x',
+        '3x',
+      ]);
+      for (const [url, density] of candidates) {
+        await expectServed(url);
+        const scale = Number.parseInt(density);
+        const { width, height, format } = await imageMetadata(
+          await file(url).bytes(),
+        );
+        expect({ width, height, format }).toEqual({
+          width: 112 * scale,
+          height: 140 * scale,
+          format: 'webp',
+        });
+      }
+    });
+
+    test('sections in print order: aside (contact, skills, education), then profile and experience', () => {
+      expect(texts(home.print, 'h2')).toEqual([
+        '## contact',
+        '## skills',
+        '## education',
+        '## profile',
+        '## experience',
+      ]);
+    });
+
+    test('contact lists the location, then mail, site, LinkedIn and GitHub as bare links', () => {
+      expect(texts(home.print, '#cv-contact p')).toEqual([
+        'Austria',
+        'daniel@danielholzmann.com',
+        'danielholzmann.com',
+        'linkedin.com/in/daniel-holzmann-bb35235b',
+        'github.com/dVelopment',
+      ]);
+      expect(
+        each(home.print, '#cv-contact a').map(({ attrs }) => attrs.href),
+      ).toEqual([
+        `mailto:${profile.email}`,
+        profile.siteUrl,
+        social.linkedin,
+        social.github,
+      ]);
+    });
+
+    test('skills in CV order with years capped at 10, then the note', () => {
+      const now = monthOf(new Date());
+      expect(printedSkills(home.print)).toEqual(
+        (
+          [
+            ['Agentic dev workflows', { year: 2025, month: 5 }],
+            ['AI agents', 2024],
+            ['Rust', 2024],
+            ['JavaScript / TypeScript', 2016],
+            ['Engineering leadership', 2015],
+            ['Solid.js', 2025],
+            ['React', 2016],
+            ['Node.js', 2012],
+          ] as [string, Month][]
+        ).map(([name, start]) => [
+          name,
+          yearsLabel(yearsSince(start, now), 10),
+        ]),
+      );
+      expect(texts(home.print, '#skills p')).toEqual([
+        'Years of hands-on experience',
+      ]);
+      expect(texts(home.screen, '#skills p')).toEqual([
+        'scale: years of hands-on experience · max 5+',
+      ]);
+      // Print really reorders: every item carries the print variant that turns its --cv-order into `order`.
+      expect(
+        each(home.html, '#skills li').every(({ attrs }) =>
+          attrs.class.split(' ').includes('print:order-(--cv-order)'),
+        ),
+      ).toBe(true);
+      expect(css).toMatch(
+        /\.print\\:order-\\\(--cv-order\\\)\s*\{\s*order:\s*var\(--cv-order\)/,
+      );
+    });
+
+    test('education prints title, school and period · degree; no languages section while unset', () => {
+      expect(texts(home.print, '#cv-education p')).toEqual([
+        'Software Engineering',
+        'University of Applied Sciences Upper Austria, Hagenberg',
+        '2011 — 2015 · BSc in Engineering',
+      ]);
+      expect(each(home.html, '#cv-languages')).toEqual([]);
+      expect(home.html).not.toMatch(/\[(YEAR|DEGREE|LANGUAGES)\]/);
+    });
+
+    test('profile counts exact career and leadership years up to the build month', () => {
+      const now = monthOf(new Date());
+      const career = yearsSince({ year: 2006, month: 2 }, now);
+      const leadership = yearsSince(2015, now);
+      expect(texts(home.print, '#about p')).toEqual([
+        `Developer, AI engineer and engineering leader with ${career}+ years of hands-on software engineering and ${leadership}+ years of leading and supporting engineering teams. I build production-grade AI agents and ship software with agentic development workflows: coding agents take on much of the implementation, and I step in myself wherever it counts — architecture, the tricky parts, review, and the call on what goes to production.`,
+      ]);
+    });
+
+    test('experience lists role · company, numeric month ranges and the CV summaries', () => {
+      expect(texts(home.print, '#work h3')).toEqual([
+        'Head of Engineering · Sitelevel.ai',
+        'Principal Software Architect · Bond Vet',
+        'Lead Developer · Veho Technologies',
+        'Lead Developer · atipso',
+        'Freelance Web Developer · danielholzmann.com',
+      ]);
+      expect(texts(home.print, '#work li > p:first-of-type')).toEqual([
+        '03/2025 — present',
+        '05/2018 — 02/2025',
+        '01/2017 — 03/2018',
+        '02/2011 — 01/2016',
+        '02/2006 — present',
+      ]);
+      expect(texts(home.print, '#work li > p:nth-of-type(2)')).toEqual([
+        'Leading and supporting the engineering team; building production-grade AI agents and agentic workflows.',
+        'Led the engineering team; responsible for all in-house and client-facing websites and apps.',
+        'Development of web, Android and iOS apps.',
+        'Consultant and technical lead as a freelancer.',
+        'Web development, specialized in React and Node.js.',
+      ]);
+    });
+
+    test('footer prints the CV lines instead of the prompt', () => {
+      expect(texts(home.print, 'footer span')).toEqual([
+        '$ print danielholzmann.com --format=cv',
+        'always current at danielholzmann.com',
+      ]);
+    });
+
+    test('screen-only parts are left off: skip link, header nav, radar, bars, timeline dots, print callout and its button, screen contact', () => {
+      for (const screenOnly of [
+        'a[href="#main"]',
+        'header',
+        '#skills svg',
+        '#skills [aria-hidden]',
+        '#work li > span',
+        '#cv',
+        'button',
+        '#contact',
+      ]) {
+        // Each selector matches the built page, so its absence in print means something.
+        expect(each(home.html, screenOnly)).not.toEqual([]);
+        expect(each(home.print, screenOnly)).toEqual([]);
+      }
+    });
+  });
+});
+
+describe('printed CV in Chromium (Playwright)', () => {
+  let server: Bun.Server<undefined>;
+  let browser: Browser;
+  beforeAll(async () => {
+    server = Bun.serve({
+      port: 0,
+      async fetch(req) {
+        const { pathname } = new URL(req.url);
+        const served = file(
+          pathname.endsWith('/') ? `${pathname}index.html` : pathname,
+        );
+        return (await served.exists())
+          ? new Response(served)
+          : new Response('not found', { status: 404 });
+      },
+    });
+    browser = await chromium.launch();
+  }, 60_000);
+
+  afterAll(async () => {
+    await browser?.close();
+    server?.stop(true);
+  });
+
+  /** The start page in print media, with the web fonts loaded so line breaks match a real print. */
+  async function printPage() {
+    const page = await browser.newPage({
+      viewport: { width: 794, height: 1123 },
+    });
+    await page.emulateMedia({ media: 'print' });
+    await page.goto(server.url.href, { waitUntil: 'networkidle' });
+    await page.evaluate(() => document.fonts.ready);
+    return page;
+  }
+
+  test('the CV fits its A4 canvas: nothing overflows the page or its box', async () => {
+    const page = await printPage();
+    const { scrollHeight, overflowing } = await page.evaluate(() => {
+      const canvas = document.querySelector('.page')!;
+      const bottom = canvas.getBoundingClientRect().bottom;
+      return {
+        scrollHeight: canvas.scrollHeight,
+        // Visible elements reaching past the canvas, or layout boxes whose content spills out of them:
+        // the columns shrink to the space above the footer, so a column grown too long overflows itself
+        // first. Text elements are left out: a tight line height lets glyphs overhang by design.
+        overflowing: [...canvas.querySelectorAll('*')]
+          .filter((el) => {
+            if (!el.checkVisibility()) return false;
+            const spills =
+              el.matches('div, section, ol, ul, li, footer') &&
+              getComputedStyle(el).display !== 'contents' &&
+              el.scrollHeight > el.clientHeight + 1;
+            return spills || el.getBoundingClientRect().bottom > bottom + 0.5;
+          })
+          .map((el) => el.outerHTML.slice(0, 80)),
+      };
+    });
+    expect(overflowing).toEqual([]);
+    expect(scrollHeight).toBeLessThanOrEqual(1123);
+    await page.close();
+  });
+
+  test('printing gives exactly one A4 page', async () => {
+    const page = await printPage();
+    const pdf = new TextDecoder('latin1').decode(
+      await page.pdf({ preferCSSPageSize: true, printBackground: true }),
+    );
+    expect(pdf.match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
+    // A4 in PDF points is 595.28 × 841.89; Chromium rounds the box to whole CSS pixels.
+    const [width, height] = pdf
+      .match(/\/MediaBox\s*\[\s*0 0 ([\d.]+) ([\d.]+)\s*\]/)!
+      .slice(1)
+      .map(Number);
+    expect(width).toBeCloseTo(595.28, 0);
+    expect(height).toBeCloseTo(841.89, 0);
+    await page.close();
+  });
 });
 
 describe('start page built at a later month', () => {
@@ -560,9 +896,7 @@ describe('start page built at a later month', () => {
     expect(later.text['#about']).toContain('14+ years of leading');
     expect(later.text.footer).toBe('daniel@portfolio:~$ © 2029');
     // Finished jobs keep their length; ongoing ones stay "present".
-    expect(
-      each(later.html, '#work li > p:first-of-type').map((p) => p.text),
-    ).toEqual([
+    expect(texts(later.screen, '#work li > p:first-of-type')).toEqual([
       'Mar 2025 — present',
       'May 2018 — 6 yrs 10 mos',
       'Jan 2017 — 1 yr 3 mos',
@@ -570,7 +904,7 @@ describe('start page built at a later month', () => {
       'Feb 2006 — present',
     ]);
     // Skills pass their caps at different months; between them the detail is exact. Bars and radar stop at 5.
-    expect(skillRows(later.html)).toEqual([
+    expect(skillRows(later.screen)).toEqual([
       ['AI agents', '5+ yrs', '5 yrs', 'width: 100%'],
       ['Agentic development workflows', '4 yrs', '4 yrs', 'width: 80%'],
       ['JavaScript / TypeScript', '5+ yrs', '10+ yrs', 'width: 100%'],
@@ -591,6 +925,23 @@ describe('start page built at a later month', () => {
         .map(({ attrs }) => `${attrs.cx},${attrs.cy}`)
         .join(' '),
     ).toBe(polygon);
+  });
+
+  test('the printed CV counts up to that month too', () => {
+    expect(texts(later.print, '#about p')[0]).toStartWith(
+      'Developer, AI engineer and engineering leader with 23+ years of hands-on software engineering and 14+ years of leading',
+    );
+    // Under 10 years shows exactly; JS/TS, leadership, React and Node.js passed the 10 cap.
+    expect(printedSkills(later.print)).toEqual([
+      ['Agentic dev workflows', '4 yrs'],
+      ['AI agents', '5 yrs'],
+      ['Rust', '5 yrs'],
+      ['JavaScript / TypeScript', '10+ yrs'],
+      ['Engineering leadership', '10+ yrs'],
+      ['Solid.js', '4 yrs'],
+      ['React', '10+ yrs'],
+      ['Node.js', '10+ yrs'],
+    ]);
   });
 });
 

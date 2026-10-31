@@ -1,0 +1,21 @@
+---
+/** Text worded differently on screen and on the printed CV: one span per medium, or the plain text when both agree. */
+interface Props {
+  screen: string;
+  /** Wording on the printed CV; defaults to `screen`. */
+  print?: string;
+}
+
+const { screen, print = screen } = Astro.props;
+---
+
+{
+  screen === print ? (
+    screen
+  ) : (
+    <>
+      <span class="print:hidden">{screen}</span>
+      <span class="hidden print:inline">{print}</span>
+    </>
+  )
+}
