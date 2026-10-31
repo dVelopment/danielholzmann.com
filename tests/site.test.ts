@@ -620,7 +620,7 @@ describe('start page', () => {
     test('header: photo, kicker, name and title, without the hero’s tagline and chips', () => {
       expect(texts(home.print, '#top p')).toEqual([
         '~/daniel_ · curriculum vitae',
-        'Full-Stack Developer & AI Engineer',
+        'AI Engineer & Full-Stack Developer',
       ]);
       // The screen kicker and the chips are gone (the tagline is excluded by the list above).
       for (const chip of ['location:', 'exp:', 'now:', 'whoami'])
@@ -677,7 +677,7 @@ describe('start page', () => {
 
     test('contact lists the location, then mail, site, LinkedIn and GitHub as bare links', () => {
       expect(texts(home.print, '#cv-contact p')).toEqual([
-        'Austria',
+        'Vienna, Austria',
         'daniel@danielholzmann.com',
         'danielholzmann.com',
         'linkedin.com/in/daniel-holzmann-bb35235b',
