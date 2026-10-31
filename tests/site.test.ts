@@ -200,9 +200,7 @@ const NAMES = '#skills li > div > span:first-child';
 /** Each skill list item as [name, experience label, bar style]. */
 function skillRows(html: string) {
   const experience = texts(html, '#skills li [data-experience]');
-  const bars = each(html, '#skills li div[style]').map(
-    (m) => m.attrs.style,
-  );
+  const bars = each(html, '#skills li div[style]').map((m) => m.attrs.style);
   return texts(html, NAMES).map((name, i) => [name, experience[i], bars[i]]);
 }
 
@@ -214,9 +212,7 @@ function printedSkills(print: string) {
 /** The radar's data polygon and its vertex dots, each as an SVG points string. */
 function radarShape(html: string) {
   return {
-    polygon: each(html, '#skills svg > polygon').map(
-      (p) => p.attrs.points,
-    ),
+    polygon: each(html, '#skills svg > polygon').map((p) => p.attrs.points),
     dots: each(html, '#skills circle')
       .map(({ attrs }) => `${attrs.cx},${attrs.cy}`)
       .join(' '),
@@ -423,7 +419,8 @@ describe('start page', () => {
     expect(targets).toEqual(
       expect.arrayContaining(['main', 'top', 'about', 'work', 'contact', 'cv']),
     );
-    expect(targets.filter((id) => !ids.has(id))).toEqual([]);
+    // A bare `#` is the document's top (the section nav's `↑ top`), not an element.
+    expect(targets.filter((id) => id && !ids.has(id))).toEqual([]);
   });
 
   test('skills list in the agreed order with years and experience bars for the build month', () => {
@@ -441,8 +438,9 @@ describe('start page', () => {
     expect(radarImage.attrs['aria-label']).toBe(
       'Skill radar, skill level out of 5: JavaScript / TypeScript 5, Node.js 5, React 4, Solid.js 3, System integration 4, Rust 4, AI agents 5, Agentic development workflows 5, Engineering leadership 4',
     );
-    expect(texts(home.screen, '#skills p')).toEqual([
-      'radar: skill level · 1–5 · bars: years of experience',
+    expect(texts(home.screen, '#skills p > span')).toEqual([
+      'radar: skill level · 1–5',
+      'bars: years of experience',
     ]);
     // Polygon and vertex dots sit on the ring of each level.
     expect(radarShape(home.html)).toEqual({
@@ -451,9 +449,7 @@ describe('start page', () => {
     });
     // Screen readers skip the bar, and hear name, skill level and experience instead.
     expect(
-      each(home.html, '#skills [aria-hidden]').map(
-        ({ text }) => text || 'bar',
-      ),
+      each(home.html, '#skills [aria-hidden]').map(({ text }) => text || 'bar'),
     ).toEqual(SKILLS.map(() => 'bar'));
     const spoken = new HTMLRewriter()
       .on('[aria-hidden="true"]', {
@@ -479,9 +475,7 @@ describe('start page', () => {
       value: 0,
     }));
     expect(
-      each(home.html, '#skills svg > g > polygon').map(
-        (p) => p.attrs.points,
-      ),
+      each(home.html, '#skills svg > g > polygon').map((p) => p.attrs.points),
     ).toEqual(radar(nineAxes).rings.map(points));
     expect(
       each(home.html, '#skills svg text')
@@ -560,14 +554,8 @@ describe('start page', () => {
         ' ',
       );
     for (const i of indices) {
-      const [dot] = each(
-        home.html,
-        `#skills circle[data-skill="${i}"]`,
-      );
-      const [spoke] = each(
-        home.html,
-        `#skills line[data-skill="${i}"]`,
-      );
+      const [dot] = each(home.html, `#skills circle[data-skill="${i}"]`);
+      const [spoke] = each(home.html, `#skills line[data-skill="${i}"]`);
       expect(`${dot.attrs.cx},${dot.attrs.cy}`).toBe(vertices[Number(i)]);
       expect(`${spoke.attrs.x2},${spoke.attrs.y2}`).toBe(spokeEnds[Number(i)]);
     }
@@ -594,7 +582,7 @@ describe('start page', () => {
     expect(home.html).not.toContain('group-focus:');
   });
 
-  test('focus order follows the page: skip link, header (logo, nav), each skill item, print button, contact links', () => {
+  test('focus order follows the page: skip link, header (logo, nav), each skill item, print button, contact links, section nav', () => {
     // Only skill items carry tabindex, so Tab follows document order; the radar is not focusable.
     const skillItems = each(home.screen, '#skills li');
     expect(each(home.html, '[tabindex]').map((e) => e.attrs)).toEqual(
@@ -609,6 +597,7 @@ describe('start page', () => {
       ...skillItems,
       ...each(home.screen, 'button'),
       ...each(home.screen, '#contact a'),
+      ...each(home.screen, 'nav[aria-label="Sections"] a'),
     ]);
   });
 
@@ -792,10 +781,11 @@ describe('start page', () => {
       ]);
     });
 
-    test('screen-only parts are left off: skip link, header nav, radar, bars, timeline dots, print callout and its button, screen contact', () => {
+    test('screen-only parts are left off: skip link, header nav, section nav, radar, bars, timeline dots, print callout and its button, screen contact', () => {
       for (const screenOnly of [
         'a[href="#main"]',
         'header',
+        'nav[aria-label="Sections"]',
         '#skills svg',
         '#skills [aria-hidden]',
         '#work li > span',
@@ -836,15 +826,115 @@ describe('the start page in Chromium (Playwright)', () => {
   });
 
   /** The start page in a medium, with the web fonts loaded so text measures as it renders. */
-  async function openPage(media: 'screen' | 'print') {
-    const page = await browser.newPage({
-      viewport: { width: 794, height: 1123 },
-    });
+  async function openPage(
+    media: 'screen' | 'print',
+    viewport = { width: 794, height: 1123 },
+  ) {
+    const page = await browser.newPage({ viewport });
     await page.emulateMedia({ media });
     await page.goto(server.url.href, { waitUntil: 'networkidle' });
     await page.evaluate(() => document.fonts.ready);
     return page;
   }
+
+  const PHONE = { width: 390, height: 844 };
+  const DESKTOP = { width: 1280, height: 800 };
+
+  test('the skills legend is two whole phrases on a phone, one line on a desktop', async () => {
+    for (const [viewport, lines] of [
+      [PHONE, ['radar: skill level · 1–5', 'bars: years of experience']],
+      [DESKTOP, ['radar: skill level · 1–5 · bars: years of experience']],
+    ] as const) {
+      const page = await openPage('screen', viewport);
+      // Group the legend's visible text into rendered lines by the top edge of each part's line boxes (a
+      // Range's rects; the spans are flex items, whose own box is one rect however many lines they take).
+      const rendered = await page.evaluate(() => {
+        const byTop = new Map<number, string[]>();
+        for (const span of document.querySelectorAll('#skills p > span')) {
+          if (!span.checkVisibility()) continue;
+          const range = document.createRange();
+          range.selectNodeContents(span);
+          // Separate text nodes on one line give separate rects with the same top.
+          const tops = new Set(
+            [...range.getClientRects()].map((r) => Math.round(r.top)),
+          );
+          if (tops.size !== 1) return [`${span.textContent} wraps`];
+          const [top] = tops;
+          byTop.set(top, [...(byTop.get(top) ?? []), span.textContent!]);
+        }
+        return [...byTop.values()].map((parts) => parts.join(' '));
+      });
+      expect(rendered).toEqual([...lines]);
+      await page.close();
+    }
+  });
+
+  test('the section nav appears once scrolled, fits the viewport, jumps to sections and back to the top, clears the footer, and stays shown while keyboard-focused', async () => {
+    for (const viewport of [PHONE, DESKTOP]) {
+      const page = await openPage('screen', viewport);
+      const nav = page.locator('nav[aria-label="Sections"]');
+      // At the top the header nav is in view, so the floating one is hidden and out of the Tab order.
+      expect(await nav.isVisible()).toBe(false);
+      await page.mouse.wheel(0, 600);
+      // The scroll timeline restyles on the next frame; waitFor fails the test if the state never comes.
+      await nav.waitFor({ state: 'visible', timeout: 2000 });
+      const box = (await nav.boundingBox())!;
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+      expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+
+      await nav.getByRole('link', { name: 'work' }).click();
+      await page.waitForFunction(
+        () =>
+          Math.abs(
+            document.querySelector('#work')!.getBoundingClientRect().top,
+          ) < 1,
+      );
+      // At the very bottom the pill must not cover the footer text.
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      const covered = await page.evaluate(() => {
+        const pill = document
+          .querySelector('nav[aria-label="Sections"]')!
+          .getBoundingClientRect();
+        return [...document.querySelectorAll('footer span')]
+          .filter((el) => el.checkVisibility())
+          .map((el) => el.getBoundingClientRect())
+          .some(
+            (r) =>
+              r.bottom > pill.top &&
+              r.top < pill.bottom &&
+              r.right > pill.left &&
+              r.left < pill.right,
+          );
+      });
+      expect(covered).toBe(false);
+
+      await nav.getByRole('link', { name: 'top' }).click();
+      await page.waitForFunction(() => window.scrollY === 0);
+      await nav.waitFor({ state: 'hidden', timeout: 2000 });
+
+      // Back to the top by keyboard: the focused link stays visible instead of fading out under its ring.
+      await page.mouse.wheel(0, 600);
+      const top = nav.getByRole('link', { name: 'top' });
+      await top.waitFor({ state: 'visible', timeout: 2000 });
+      await top.focus();
+      await page.keyboard.press('Enter');
+      await page.waitForFunction(() => window.scrollY === 0);
+      expect(
+        await top.evaluate(
+          (a) =>
+            a.matches(':focus-visible') &&
+            a.checkVisibility({
+              opacityProperty: true,
+              visibilityProperty: true,
+            }),
+        ),
+      ).toBe(true);
+      await top.blur();
+      await nav.waitFor({ state: 'hidden', timeout: 2000 });
+      await page.close();
+    }
+  });
 
   test('every radar label fits inside the radar’s viewBox', async () => {
     const page = await openPage('screen');
@@ -877,7 +967,9 @@ describe('the start page in Chromium (Playwright)', () => {
         ).fill;
         return [...document.querySelectorAll('#skills li')].map((li) => {
           const axis = li.getAttribute('data-skill');
-          const years = getComputedStyle(li.querySelector('[data-experience]')!).color;
+          const years = getComputedStyle(
+            li.querySelector('[data-experience]')!,
+          ).color;
           const label = getComputedStyle(
             document.querySelector(`#skills text[data-skill="${axis}"]`)!,
           ).fill;

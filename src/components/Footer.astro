@@ -5,8 +5,9 @@ import { bareUrl, profile } from "../data/profile";
 const site = bareUrl(profile.siteUrl);
 ---
 
+{/* Mobile: the extra bottom padding keeps the centred QuickNav pill clear of the footer text at the page end. */}
 <footer
-  class="flex flex-wrap justify-between gap-3 border-t border-line pt-6 pb-10 text-xs text-muted print:flex-nowrap print:border-paper-line print:pt-3 print:pb-0 print:font-mono print:text-ink-muted"
+  class="flex flex-wrap justify-between gap-3 border-t border-line pt-6 pb-20 text-xs text-muted sm:pb-10 print:flex-nowrap print:border-paper-line print:pt-3 print:pb-0 print:font-mono print:text-ink-muted"
 >
   <span class="print:hidden">daniel@portfolio:~$ © {buildYear}</span>
   <span class="hidden print:inline">$ print {site} --format=cv</span>
