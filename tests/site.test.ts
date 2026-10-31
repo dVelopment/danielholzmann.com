@@ -351,13 +351,10 @@ describe('start page', () => {
     ]);
   });
 
-  test('about prints both paragraphs, counting leadership years up to the build month', () => {
-    // A literal, not `leadershipYears`, so the test doesn't check the code against itself:
-    // leadership starts with the "Engineering leadership" focus area (2015, i.e. Jan 2015).
-    const years = yearsSince(2015, monthOf(new Date()));
+  test('about prints both paragraphs, leadership years capped at 10+', () => {
     expect(texts(home.screen, '#about p')).toEqual([
       'I started coding for fun as a teenager — it grew into my main occupation. At 30, after years of autodidact training, I studied Software Engineering at the University of Applied Sciences Upper Austria in Hagenberg.',
-      `${years}+ years of leading and supporting engineering teams. Today I build AI agents for production and work hands-on with coding agents in agentic development workflows.`,
+      '10+ years of leading and supporting engineering teams. Today I build AI agents for production and work hands-on with coding agents in agentic development workflows.',
     ]);
   });
 
@@ -754,12 +751,10 @@ describe('start page', () => {
       expect(home.html).not.toMatch(/\[(YEAR|DEGREE|LANGUAGES)\]/);
     });
 
-    test('profile counts exact career and leadership years up to the build month', () => {
-      const now = monthOf(new Date());
-      const career = yearsSince({ year: 2006, month: 2 }, now);
-      const leadership = yearsSince(2015, now);
+    test('profile counts exact career years up to the build month, leadership capped at 10+', () => {
+      const career = yearsSince({ year: 2006, month: 2 }, monthOf(new Date()));
       expect(texts(home.print, '#about p')).toEqual([
-        `Developer, AI engineer and engineering leader with ${career}+ years of hands-on software engineering and ${leadership}+ years of leading and supporting engineering teams. I build production-grade AI agents and ship software with agentic development workflows: coding agents take on much of the implementation, and I step in myself wherever it counts — architecture, the tricky parts, review, and the call on what goes to production.`,
+        `Developer, AI engineer and engineering leader with ${career}+ years of hands-on software engineering and 10+ years of leading and supporting engineering teams. I build production-grade AI agents and ship software with agentic development workflows: coding agents take on much of the implementation, and I step in myself wherever it counts — architecture, the tricky parts, review, and the call on what goes to production.`,
       ]);
     });
 
@@ -954,11 +949,11 @@ describe('start page built at a later month', () => {
   afterAll(() => rmSync(laterDir, { recursive: true, force: true }));
 
   test('every derived number counts up to that month, none is typed in', () => {
-    // Jul 2029: career since Feb 2006 = 23 full years, leadership since Jan 2015 = 14.
+    // Jul 2029: career since Feb 2006 = 23 full years; leadership (14 years) stays capped at 10+.
     for (const text of ['backed by 23+ years', 'exp: 23+ years'])
       expect(later.text['#top']).toContain(text);
     expect(meta(later, 'description')).toContain('23+ years');
-    expect(later.text['#about']).toContain('14+ years of leading');
+    expect(later.text['#about']).toContain('10+ years of leading');
     expect(later.text.footer).toBe('daniel@portfolio:~$ © 2029');
     // Finished jobs keep their length; ongoing ones stay "present".
     expect(texts(later.screen, '#work li > p:first-of-type')).toEqual([
@@ -987,7 +982,7 @@ describe('start page built at a later month', () => {
 
   test('the printed CV counts up to that month too', () => {
     expect(texts(later.print, '#about p')[0]).toStartWith(
-      'Developer, AI engineer and engineering leader with 23+ years of hands-on software engineering and 14+ years of leading',
+      'Developer, AI engineer and engineering leader with 23+ years of hands-on software engineering and 10+ years of leading',
     );
     // Under 10 years shows exactly; JS/TS, leadership, system integration, Node.js and React passed the 10 cap.
     expect(printedFocusAreas(later.print)).toEqual([
