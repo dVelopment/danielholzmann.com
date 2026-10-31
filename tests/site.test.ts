@@ -344,8 +344,9 @@ describe('start page', () => {
 
   test('about prints both paragraphs, leadership years in whole decades', () => {
     expect(texts(home.screen, '#about p')).toEqual([
-      "I started coding for fun as a teenager — it grew into my main occupation. At 30, after years of autodidact training, I studied Software Engineering at the University of Applied Sciences Upper Austria in Hagenberg. At heart, I'm still a tinkerer.",
+      "I started coding for fun as a teenager — it grew into my main occupation. At 30, after years of autodidact training, I studied Software Engineering at the University of Applied Sciences Upper Austria in Hagenberg.",
       '10+ years of leading and supporting engineering teams — always hands-on, always writing code myself. Today I build AI agents and agentic workflows for production and connect them with modern web apps and (legacy) systems. I help teams put coding agents to productive use without compromising on code quality.',
+      'At heart, I\'m still a tinkerer.',
     ]);
   });
 
@@ -379,7 +380,7 @@ describe('start page', () => {
 
   test('the print callout’s button is the only script and hides without JavaScript', () => {
     expect(texts(home.html, '#cv p')).toEqual([
-      'Need a classic CV for HR? Just print this page — a print stylesheet recompiles it into a one-page résumé. No PDF to download: the PDF is a build artifact.',
+      'Need a classic CV for HR? Just print this page — a print stylesheet recompiles it into a one-page résumé.',
     ]);
     expect(home.html.match(/onclick=/g)).toEqual(['onclick=']);
     const buttons = each(home.html, 'button');
