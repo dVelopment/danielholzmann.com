@@ -30,8 +30,16 @@ import TextPair from "./TextPair.astro";
             <TextPair screen={job.role} print={job.cvRole} /> · {job.company}
           </h3>
           <p class="font-sans text-[16px] text-prose-muted print:col-span-2 print:text-[13px] print:text-ink-soft">
-            <TextPair screen={job.summary} print={job.cvSummary} />
+            {job.summary}
           </p>
+          {job.stack && (
+            <p class="mt-2 text-xs text-fg print:col-span-2 print:m-0 print:font-mono print:text-[11px] print:text-ink-soft">
+              <span class="text-accent print:text-print-accent">stack:</span>{" "}
+              {job.stack.map((tech, i) => (
+                <>{i > 0 && <span class="text-muted print:text-ink-muted"> · </span>}{tech}</>
+              ))}
+            </p>
+          )}
         </li>
       ))
     }

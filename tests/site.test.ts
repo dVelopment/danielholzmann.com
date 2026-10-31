@@ -344,11 +344,28 @@ describe('start page', () => {
 
   test('about prints both paragraphs, leadership years in whole decades', () => {
     expect(texts(home.screen, '#about p')).toEqual([
-      "I started coding for fun as a teenager — it grew into my main occupation. At 30, after years of autodidact training, I studied Software Engineering at the University of Applied Sciences Upper Austria in Hagenberg.",
+      'I started coding for fun as a teenager — it grew into my main occupation. At 30, after years of autodidact training, I studied Software Engineering at the University of Applied Sciences Upper Austria in Hagenberg.',
       '10+ years of leading and supporting engineering teams — always hands-on, always writing code myself. Today I build AI agents and agentic workflows for production and connect them with modern web apps and (legacy) systems. I help teams put coding agents to productive use without compromising on code quality.',
-      'At heart, I\'m still a tinkerer.',
+      "At heart, I'm still a tinkerer.",
     ]);
   });
+
+  /** Each job's summary, the same on screen and in print. */
+  const SUMMARIES = [
+    'Leading engineering hands-on; building production-grade AI agents and agentic workflows, incl. financial reporting whose numbers trace back to the source data. ERP integrations; CI, DevOps and DX.',
+    'Led engineering hands-on for all websites and apps on the PIMS; first LLM use cases (NPS); financial/KPI data warehouse; CI, DevOps, DX.',
+    'Web, Android and iOS apps with Google Maps route planning.',
+    'Consultant and technical lead as a freelancer.',
+    'Web development, specialized in React and Node.js.',
+  ];
+
+  /** Each job's stack line, the same on screen and in print; the freelance entry has none. */
+  const STACKS = [
+    'stack: Mastra · TypeScript · Rust · MCP · tool calling · guardrails · evals · GraphQL · Postgres · Docker · GitHub Actions',
+    'stack: TypeScript · Node.js · GraphQL · MongoDB · BigQuery · AWS · GCP · CircleCI',
+    'stack: TypeScript · Node.js · GraphQL · Google Maps SDK · CircleCI',
+    'stack: PHP · JavaScript · Node.js · Meteor · MongoDB · Travis CI',
+  ];
 
   test('career timeline lists every job newest first, marking the current one', () => {
     expect(texts(home.screen, '#work li > p:first-of-type')).toEqual([
@@ -365,13 +382,10 @@ describe('start page', () => {
       'Lead Developer · atipso',
       'Freelance · danielholzmann.com',
     ]);
-    expect(texts(home.screen, '#work li > p:nth-of-type(2)')).toEqual([
-      'Leading engineering hands-on and building production-grade AI agents and agentic workflows.',
-      'Led the engineering team hands-on; all in-house and client-facing websites and apps.',
-      'Web, Android and iOS apps.',
-      'Consultant and technical lead as a freelancer.',
-      'Web development, specialized in React and Node.js.',
-    ]);
+    expect(texts(home.screen, '#work li > p:nth-of-type(2)')).toEqual(
+      SUMMARIES,
+    );
+    expect(texts(home.screen, '#work li > p:nth-of-type(3)')).toEqual(STACKS);
     const dots = each(home.screen, '#work li > span').map((s) =>
       s.attrs.class.split(' ').includes('bg-accent'),
     );
@@ -751,7 +765,7 @@ describe('start page', () => {
       ]);
     });
 
-    test('experience lists role · company, numeric month ranges and the CV summaries', () => {
+    test('experience lists role · company, numeric month ranges, the summaries and the stacks', () => {
       expect(texts(home.print, '#work h3')).toEqual([
         'Head of Engineering · Sitelevel.ai',
         'Principal Software Architect · Bond Vet',
@@ -766,13 +780,10 @@ describe('start page', () => {
         '02/2011 — 01/2016',
         '02/2006 — present',
       ]);
-      expect(texts(home.print, '#work li > p:nth-of-type(2)')).toEqual([
-        'Leading and supporting the engineering team while coding hands-on; building production-grade AI agents and agentic workflows.',
-        'Led the engineering team as a hands-on contributor; responsible for all in-house and client-facing websites and apps.',
-        'Development of web, Android and iOS apps.',
-        'Consultant and technical lead as a freelancer.',
-        'Web development, specialized in React and Node.js.',
-      ]);
+      expect(texts(home.print, '#work li > p:nth-of-type(2)')).toEqual(
+        SUMMARIES,
+      );
+      expect(texts(home.print, '#work li > p:nth-of-type(3)')).toEqual(STACKS);
     });
 
     test('footer prints the CV lines instead of the prompt', () => {

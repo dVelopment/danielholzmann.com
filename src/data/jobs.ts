@@ -14,10 +14,10 @@ export interface Job {
   start: Month;
   /** Last month worked, inclusive; unset while ongoing. */
   end?: Month;
-  /** One-liner on the screen timeline. */
+  /** Summary on the screen timeline and the printed CV; sized to fit the CV's one A4 page. */
   summary: string;
-  /** One-liner on the printed CV. */
-  cvSummary: string;
+  /** Technologies and techniques used there, on screen and on the printed CV. */
+  stack?: readonly string[];
 }
 
 /** Newest first, the order of the career timeline and the CV. */
@@ -27,9 +27,20 @@ export const jobs: readonly Job[] = [
     company: 'Sitelevel.ai',
     start: { year: 2025, month: 3 },
     summary:
-      'Leading engineering hands-on and building production-grade AI agents and agentic workflows.',
-    cvSummary:
-      'Leading and supporting the engineering team while coding hands-on; building production-grade AI agents and agentic workflows.',
+      'Leading engineering hands-on; building production-grade AI agents and agentic workflows, incl. financial reporting whose numbers trace back to the source data. ERP integrations; CI, DevOps and DX.',
+    stack: [
+      'Mastra',
+      'TypeScript',
+      'Rust',
+      'MCP',
+      'tool calling',
+      'guardrails',
+      'evals',
+      'GraphQL',
+      'Postgres',
+      'Docker',
+      'GitHub Actions',
+    ],
   },
   {
     role: 'Principal Software Architect',
@@ -37,17 +48,25 @@ export const jobs: readonly Job[] = [
     start: { year: 2018, month: 5 },
     end: { year: 2025, month: 2 },
     summary:
-      'Led the engineering team hands-on; all in-house and client-facing websites and apps.',
-    cvSummary:
-      'Led the engineering team as a hands-on contributor; responsible for all in-house and client-facing websites and apps.',
+      'Led engineering hands-on for all websites and apps on the PIMS; first LLM use cases (NPS); financial/KPI data warehouse; CI, DevOps, DX.',
+    stack: [
+      'TypeScript',
+      'Node.js',
+      'GraphQL',
+      'MongoDB',
+      'BigQuery',
+      'AWS',
+      'GCP',
+      'CircleCI',
+    ],
   },
   {
     role: 'Lead Developer',
     company: 'Veho Technologies',
     start: { year: 2017, month: 1 },
     end: { year: 2018, month: 3 },
-    summary: 'Web, Android and iOS apps.',
-    cvSummary: 'Development of web, Android and iOS apps.',
+    summary: 'Web, Android and iOS apps with Google Maps route planning.',
+    stack: ['TypeScript', 'Node.js', 'GraphQL', 'Google Maps SDK', 'CircleCI'],
   },
   {
     role: 'Lead Developer',
@@ -55,7 +74,7 @@ export const jobs: readonly Job[] = [
     start: { year: 2011, month: 2 },
     end: { year: 2016, month: 1 },
     summary: 'Consultant and technical lead as a freelancer.',
-    cvSummary: 'Consultant and technical lead as a freelancer.',
+    stack: ['PHP', 'JavaScript', 'Node.js', 'Meteor', 'MongoDB', 'Travis CI'],
   },
   {
     role: 'Freelance',
@@ -63,7 +82,6 @@ export const jobs: readonly Job[] = [
     company: 'danielholzmann.com',
     start: { year: 2006, month: 2 },
     summary: 'Web development, specialized in React and Node.js.',
-    cvSummary: 'Web development, specialized in React and Node.js.',
   },
 ];
 
