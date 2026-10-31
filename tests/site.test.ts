@@ -346,7 +346,7 @@ describe('start page', () => {
   test('about prints both paragraphs, leadership years in whole decades', () => {
     expect(texts(home.screen, '#about p')).toEqual([
       'I started coding for fun as a teenager — it grew into my main occupation. At 30, after years of autodidact training, I studied Software Engineering at the University of Applied Sciences Upper Austria in Hagenberg.',
-      '10+ years of leading and supporting engineering teams — always hands-on, always writing code myself. Founding engineer three times: I built the tech stack from scratch, and twice the team. Today I build AI agents and agentic workflows for production and connect them with modern web apps and (legacy) systems. I help teams put coding agents to productive use without compromising on code quality.',
+      '10+ years of leading and supporting engineering teams — always hands-on, always writing code myself. Today I build AI agents and agentic workflows for production and connect them with modern web apps and (legacy) systems. I help teams put coding agents to productive use without compromising on code quality.',
       "At heart, I'm still a tinkerer.",
     ]);
   });
@@ -769,7 +769,7 @@ describe('start page', () => {
 
     test('profile words career and leadership years in whole decades', () => {
       expect(texts(home.print, '#about p')).toEqual([
-        "AI engineer building production-ready agents and agentic workflows that solve real problems. This is backed by over two decades of hands-on full-stack engineering. Through more than 10 years of leading engineering teams, I have always kept writing code myself. Founding engineer three times: I built the tech stack from scratch, and twice the team. I like to get the most out of what's already there: connecting agents, modern web apps and legacy systems. I help teams put coding agents to productive use without compromising on code quality, while staying in control: writing code where it matters, set the architecture, review, and decide what goes to production.",
+        "AI engineer building production-ready agents and agentic workflows that solve real problems. This is backed by over two decades of hands-on full-stack engineering. Through more than 10 years of leading engineering teams, I have always kept writing code myself. I like to get the most out of what's already there: connecting agents, modern web apps and legacy systems. I help teams put coding agents to productive use without compromising on code quality, while staying in control: writing code where it matters, set the architecture, review, and decide what goes to production.",
       ]);
     });
 
