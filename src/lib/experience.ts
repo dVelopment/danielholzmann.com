@@ -84,11 +84,9 @@ export function yearsLabel(years: number, cap: number): string {
   return count(years, 'yr');
 }
 
-/** `<1`, `N`, or `cap+` once `years` reaches `cap`: yearsLabel without the unit. */
-export function cappedYears(years: number, cap: number): string {
-  if (years >= cap) return `${cap}+`;
-  if (years < 1) return '<1';
-  return String(years);
+/** Full years rounded down to whole decades, for `N+` counts in prose: 11 → 10, 21 → 20. */
+export function floorToDecade(years: number): number {
+  return Math.floor(years / 10) * 10;
 }
 
 /** Length of a job counting both its first and last month: `6 yrs 10 mos`, `1 yr 3 mos`, `5 yrs`. */
