@@ -1,7 +1,6 @@
 ---
-import { buildMonth } from "../data/build";
-import { DETAIL_CAP, radarAxes, skills } from "../data/skills";
-import { yearsLabel, yearsSince } from "../lib/experience";
+import { DETAIL_CAP, radarAxes, skills, skillYears } from "../data/skills";
+import { yearsLabel } from "../lib/experience";
 import { points, radar, RADAR_CENTER, RADAR_RINGS } from "../lib/radar";
 import SectionHeading from "./SectionHeading.astro";
 import TextPair from "./TextPair.astro";
@@ -12,7 +11,7 @@ const ariaLabel = `Skill radar, skill level out of ${RADAR_RINGS}: ${radarAxes
   .join(", ")}`;
 /** List rows in list order, each keeping its radar index, so data-skill pairs the row with its axis, plus its years and bar width (% of DETAIL_CAP years, full from there). */
 const rows = skills.map((skill) => {
-  const years = yearsSince(skill.start, buildMonth);
+  const years = skillYears(skill);
   return { ...skill, index: radarAxes.indexOf(skill), years, bar: (Math.min(years, DETAIL_CAP) * 100) / DETAIL_CAP };
 });
 ---
@@ -92,6 +91,6 @@ const rows = skills.map((skill) => {
         ))
       }
     </ul>
-    <p class="mt-0.5 hidden text-xs text-ink-muted print:block">Ordered by skill level · years of hands-on experience</p>
+    <p class="mt-0.5 hidden text-xs text-ink-muted print:block">Ordered by focus · years of hands-on experience</p>
   </div>
 </section>

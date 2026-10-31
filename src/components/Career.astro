@@ -6,13 +6,13 @@ import SectionHeading from "./SectionHeading.astro";
 import TextPair from "./TextPair.astro";
 ---
 
-<section id="work" aria-labelledby="work-h" class="flex flex-col gap-6 pt-24 print:gap-3.5 print:pt-0">
+<section id="work" aria-labelledby="work-h" class="flex flex-col gap-6 pt-24 print:gap-1.5 print:pt-0">
   <SectionHeading id="work-h"><TextPair screen="git log --career" print="experience" /></SectionHeading>
   {/* role="list": WebKit drops list semantics from unstyled lists. */}
   <ol role="list" class="flex flex-col border-l border-line print:contents">
     {
       jobs.map((job) => (
-        <li class="relative pb-8 pl-7 last:pb-0 print:grid print:grid-cols-[1fr_auto] print:items-baseline print:gap-x-3 print:gap-y-[3px] print:p-0">
+        <li class="relative pb-8 pl-7 last:pb-0 print:grid print:grid-cols-[1fr_auto] print:items-baseline print:gap-x-3 print:gap-y-0.5 print:p-0">
           <span
             aria-hidden="true"
             class:list={[

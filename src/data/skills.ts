@@ -12,16 +12,18 @@ export interface Skill {
   radarLabel?: readonly [string, ...string[]];
   /** Month hands-on experience began; a bare year counts from January. */
   start: Month;
+  /** Month hands-on experience ended, for a skill no longer in use; experience counts up to it instead of the build month. */
+  end?: Month;
   level: SkillLevel;
 }
 
-const aiAgents: Skill = { name: 'AI agents', start: 2024, level: 5 };
+const aiAgents: Skill = { name: 'AI agents', start: 2024, level: 4 };
 const agentic: Skill = {
   name: 'Agentic development workflows',
   cvName: 'Agentic dev workflows',
   radarLabel: ['Agentic development', 'workflows'],
   start: { year: 2025, month: 5 },
-  level: 5,
+  level: 4,
 };
 const typescript: Skill = {
   name: 'JavaScript / TypeScript',
@@ -39,23 +41,25 @@ const integration: Skill = {
   name: 'System integration',
   radarLabel: ['System', 'integration'],
   start: 2006,
-  level: 4,
+  level: 5,
 };
 const node: Skill = { name: 'Node.js', start: 2012, level: 5 };
 const react: Skill = { name: 'React', start: 2016, level: 4 };
 const solid: Skill = { name: 'Solid.js', start: 2025, level: 3 };
+const python: Skill = { name: 'Python', start: 2011, end: 2014, level: 1 };
 
-/** List order on screen and on the printed CV, kept by hand: highest skill level first. */
+/** List order on screen and on the printed CV, kept by hand: the AI skills first, the rest by highest skill level. */
 export const skills: readonly Skill[] = [
   aiAgents,
   agentic,
   typescript,
   node,
+  integration,
   rust,
   leadership,
-  integration,
   react,
   solid,
+  python,
 ];
 
 /** Radar axis order, clockwise from the top; chosen so every label fits the design's radar. */
@@ -64,6 +68,7 @@ export const radarAxes: readonly Skill[] = [
   node,
   react,
   solid,
+  python,
   integration,
   rust,
   aiAgents,
@@ -75,6 +80,10 @@ export const radarAxes: readonly Skill[] = [
 export const leadershipYears = floorToDecade(
   yearsSince(leadership.start, buildMonth),
 );
+
+/** Full years of hands-on experience in `skill` at the build month, or up to its end month. */
+export const skillYears = (skill: Skill): number =>
+  yearsSince(skill.start, skill.end ?? buildMonth);
 
 /** Cap for the years on each list row and its bar, on screen and on the printed CV (`10+ yrs`). */
 export const DETAIL_CAP = 10;

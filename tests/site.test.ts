@@ -166,34 +166,35 @@ const texts = (html: string, selector: string) =>
   each(html, selector).map((m) => m.text);
 
 /**
- * The agreed skills in list order: name, CV name, skill level, start. Literals, so the tests don't check the
- * code against itself.
+ * The agreed skills in list order: name, CV name, skill level, start and, for a skill no longer in use, end.
+ * Literals, so the tests don't check the code against itself.
  */
-const SKILLS: [string, string, number, Month][] = [
-  ['AI agents', 'AI agents', 5, 2024],
+const SKILLS: [string, string, number, Month, Month?][] = [
+  ['AI agents', 'AI agents', 4, 2024],
   [
     'Agentic development workflows',
     'Agentic dev workflows',
-    5,
+    4,
     { year: 2025, month: 5 },
   ],
   ['JavaScript / TypeScript', 'JavaScript / TypeScript', 5, 2016],
   ['Node.js', 'Node.js', 5, 2012],
+  ['System integration', 'System integration', 5, 2006],
   ['Rust', 'Rust', 4, 2024],
   ['Engineering leadership', 'Engineering leadership', 4, 2015],
-  ['System integration', 'System integration', 4, 2006],
   ['React', 'React', 4, 2016],
   ['Solid.js', 'Solid.js', 3, 2025],
+  ['Python', 'Python', 1, 2011, 2014],
 ];
-/** Each skill's whole years of experience at the build month. */
-const BUILD_YEARS = SKILLS.map(([, , , start]) =>
-  yearsSince(start, monthOf(new Date())),
+/** Each skill's whole years of experience at the build month, or up to its end. */
+const BUILD_YEARS = SKILLS.map(([, , , start, end]) =>
+  yearsSince(start, end ?? monthOf(new Date())),
 );
 /** Each skill's experience label at the build month, capped at 10. */
 const BUILD_EXPERIENCE = BUILD_YEARS.map((years) => yearsLabel(years, 10));
-/** Data polygon of the levels in radar order (JS/TS 5, Node.js 5, React 4, Solid.js 3, System integration 4, Rust 4, AI agents 5, Agentic 5, leadership 4). */
+/** Data polygon of the levels in radar order (JS/TS 5, Node.js 5, React 4, Solid.js 3, Python 1, System integration 5, Rust 4, AI agents 4, Agentic 4, leadership 4). */
 const LEVEL_POLYGON =
-  '200,40 302.8,77.4 326.1,177.8 283.1,248 243.8,320.3 156.2,320.3 61.4,280 42.4,172.2 117.7,101.9';
+  '200,40 294,70.6 321.7,160.4 291.3,229.7 218.8,225.9 200,360 124.8,303.6 78.3,239.6 78.3,160.4 124.8,96.4';
 
 const NAMES = '#skills li > div > span:first-child';
 
@@ -352,19 +353,20 @@ describe('start page', () => {
 
   /** Each job's summary, the same on screen and in print. */
   const SUMMARIES = [
-    'Leading engineering hands-on; building production-grade AI agents and agentic workflows, incl. financial reporting whose numbers trace back to the source data. ERP integrations; CI, DevOps and DX.',
-    'Led engineering hands-on for all websites and apps on the PIMS; first LLM use cases (NPS); financial/KPI data warehouse; CI, DevOps, DX.',
+    'Leading engineering hands-on; building production-ready AI agents and agentic workflows with evals, guardrails and traceability, e.g. reasoning over financial reports whose numbers trace back to the source data. Agents in pilot with design partners on their real ERP data; ERP integrations, CI, DevOps and DX.',
+    'Led engineering hands-on for all websites and apps on the PIMS; LLM-based classification of NPS feedback; financial/KPI data warehouse; CI, DevOps, DX.',
     'Web, Android and iOS apps with Google Maps route planning.',
     'Consultant and technical lead as a freelancer.',
     'Web development, specialized in React and Node.js.',
   ];
 
-  /** Each job's stack line, the same on screen and in print; the freelance entry has none. */
+  /** Each job's stack line, the same on screen and in print. */
   const STACKS = [
-    'stack: Mastra · TypeScript · Rust · MCP · tool calling · guardrails · evals · GraphQL · Postgres · Docker · GitHub Actions',
-    'stack: TypeScript · Node.js · GraphQL · MongoDB · BigQuery · AWS · GCP · CircleCI',
-    'stack: TypeScript · Node.js · GraphQL · Google Maps SDK · CircleCI',
-    'stack: PHP · JavaScript · Node.js · Meteor · MongoDB · Travis CI',
+    'stack: Mastra · TypeScript · Rust · MCP · tool calling · RAG · guardrails · evals · GraphQL · webhooks · OAuth/OIDC · RBAC · Postgres · Docker · GitHub Actions',
+    'stack: TypeScript · Node.js · GraphQL · webhooks · MongoDB · BigQuery · AWS · GCP · CircleCI',
+    'stack: TypeScript · Node.js · GraphQL · webhooks · Google Maps SDK · CircleCI',
+    'stack: PHP · JavaScript · Node.js · Meteor · MongoDB · webhooks · Travis CI',
+    'stack: TypeScript · Node.js · Bun · PHP · Python · MongoDB · Postgres · MariaDB · Docker',
   ];
 
   test('career timeline lists every job newest first, marking the current one', () => {
@@ -451,7 +453,7 @@ describe('start page', () => {
     // HTMLRewriter lowercases attribute names.
     expect(radarImage.attrs.viewbox).toBe('-170 0 640 410');
     expect(radarImage.attrs['aria-label']).toBe(
-      'Skill radar, skill level out of 5: JavaScript / TypeScript 5, Node.js 5, React 4, Solid.js 3, System integration 4, Rust 4, AI agents 5, Agentic development workflows 5, Engineering leadership 4',
+      'Skill radar, skill level out of 5: JavaScript / TypeScript 5, Node.js 5, React 4, Solid.js 3, Python 1, System integration 5, Rust 4, AI agents 4, Agentic development workflows 4, Engineering leadership 4',
     );
     expect(texts(home.screen, '#skills p > span')).toEqual([
       'radar: skill level · 1–5',
@@ -485,13 +487,13 @@ describe('start page', () => {
 
   test('radar rings, ring labels and axis labels land on the coordinates computed from the design geometry', () => {
     // Rings depend on the axis count only; radar.test.ts pins them against the design.
-    const nineAxes = Array.from({ length: 9 }, () => ({
+    const tenAxes = Array.from({ length: 10 }, () => ({
       label: ['x'] as const,
       value: 0,
     }));
     expect(
       each(home.html, '#skills svg > g > polygon').map((p) => p.attrs.points),
-    ).toEqual(radar(nineAxes).rings.map(points));
+    ).toEqual(radar(tenAxes).rings.map(points));
     expect(
       each(home.html, '#skills svg text')
         .filter((t) => !('data-skill' in t.attrs))
@@ -507,29 +509,31 @@ describe('start page', () => {
       'start',
       'start',
       'start',
+      'middle',
       'end',
       'end',
       'end',
       'end',
     ]);
-    // 9 axes: computed from the design's radius and drops; Solid.js back after React.
+    // 10 axes: computed from the design's radius and drops; Python after Solid.js.
     expect(
       each(home.html, '#skills svg tspan').map(
         (t) => `${t.attrs.x},${t.attrs.y} ${t.text}`,
       ),
     ).toEqual([
       '200,22 JavaScript / TypeScript',
-      '314,64 Node.js',
-      '375,169 React',
-      '354,303 Solid.js',
-      '261,372 System',
-      '261,391 integration',
-      '139,381 Rust',
-      '46,303 AI agents',
-      '25,159 Agentic development',
-      '25,178 workflows',
-      '86,54 Engineering',
-      '86,73 leadership',
+      '305,56 Node.js',
+      '369,145 React',
+      '369,269 Solid.js',
+      '305,358 Python',
+      '200,385 System',
+      '200,404 integration',
+      '95,358 Rust',
+      '31,269 AI agents',
+      '31,135 Agentic development',
+      '31,154 workflows',
+      '95,46 Engineering',
+      '95,65 leadership',
     ]);
   });
 
@@ -546,6 +550,7 @@ describe('start page', () => {
       '6',
       '7',
       '8',
+      '9',
     ]);
     // Each list item pairs with the radar label of the same skill, whatever the list order.
     const labels = each(home.html, '#skills svg text[data-skill]');
@@ -565,7 +570,7 @@ describe('start page', () => {
     // Each index's dot sits on that axis's level vertex and its spoke ends on that axis's outer ring.
     const vertices = LEVEL_POLYGON.split(' ');
     const spokeEnds =
-      '200,40 302.8,77.4 357.6,172.2 338.6,280 254.7,350.4 145.3,350.4 61.4,280 42.4,172.2 97.2,77.4'.split(
+      '200,40 294,70.6 352.2,150.6 352.2,249.4 294,329.4 200,360 106,329.4 47.8,249.4 47.8,150.6 106,70.6'.split(
         ' ',
       );
     for (const i of indices) {
@@ -740,7 +745,7 @@ describe('start page', () => {
         SKILLS.map(([, cvName], i) => [cvName, BUILD_EXPERIENCE[i]]),
       );
       expect(texts(home.print, '#skills p')).toEqual([
-        'Ordered by skill level · years of hands-on experience',
+        'Ordered by focus · years of hands-on experience',
       ]);
       // Print keeps the DOM order: no item is reordered with CSS `order`.
       for (const { attrs } of each(home.html, '#skills li')) {
@@ -991,12 +996,12 @@ describe('the start page in Chromium (Playwright)', () => {
           return `${years === accent ? 'accent' : 'plain'} ${label === accent ? 'lit' : 'unlit'} ${dot}`;
         });
       });
-    const onlySystemIntegration = Array.from({ length: 9 }, (_, i) =>
-      i === 6 ? 'accent lit 1' : 'plain unlit 0',
+    const onlySystemIntegration = Array.from({ length: 10 }, (_, i) =>
+      i === 4 ? 'accent lit 1' : 'plain unlit 0',
     );
-    expect(await states()).toEqual(Array(9).fill('plain unlit 0'));
-    // Tab from Engineering leadership onto System integration.
-    await page.locator('#skills li').nth(5).focus();
+    expect(await states()).toEqual(Array(10).fill('plain unlit 0'));
+    // Tab from Node.js onto System integration.
+    await page.locator('#skills li').nth(3).focus();
     await page.keyboard.press('Tab');
     expect(await states()).toEqual(onlySystemIntegration);
     // Printed while still focused: the years keep the CV's muted ink (`ink-muted`), like every other row.
@@ -1006,12 +1011,12 @@ describe('the start page in Chromium (Playwright)', () => {
         (el) => getComputedStyle(el).color,
       ),
     );
-    expect(printed).toEqual(Array(9).fill('rgb(78, 89, 82)'));
+    expect(printed).toEqual(Array(10).fill('rgb(78, 89, 82)'));
     await page.emulateMedia({ media: 'screen' });
     // Hovering System integration's radar label lights its list item too.
     await page.evaluate(() => (document.activeElement as HTMLElement).blur());
-    expect(await states()).toEqual(Array(9).fill('plain unlit 0'));
-    await page.hover('#skills text[data-skill="4"]');
+    expect(await states()).toEqual(Array(10).fill('plain unlit 0'));
+    await page.hover('#skills text[data-skill="5"]');
     expect(await states()).toEqual(onlySystemIntegration);
     await page.close();
   });
@@ -1088,17 +1093,18 @@ describe('start page built at a later month', () => {
       'Feb 2011 — 5 yrs',
       'Feb 2006 — present',
     ]);
-    // Every experience has passed the 10 cap: full bars; order and the radar stay put.
+    // Every ongoing experience has passed the 10 cap: full bars; Python stays at its 2011–2014 years; order and the radar stay put.
     expect(skillRows(later.screen)).toEqual([
       ['AI agents', '10+ yrs', 'width: 100%'],
       ['Agentic development workflows', '10+ yrs', 'width: 100%'],
       ['JavaScript / TypeScript', '10+ yrs', 'width: 100%'],
       ['Node.js', '10+ yrs', 'width: 100%'],
+      ['System integration', '10+ yrs', 'width: 100%'],
       ['Rust', '10+ yrs', 'width: 100%'],
       ['Engineering leadership', '10+ yrs', 'width: 100%'],
-      ['System integration', '10+ yrs', 'width: 100%'],
       ['React', '10+ yrs', 'width: 100%'],
       ['Solid.js', '10+ yrs', 'width: 100%'],
+      ['Python', '3 yrs', 'width: 30%'],
     ]);
     expect(radarShape(later.html)).toEqual({
       polygon: [LEVEL_POLYGON],
@@ -1115,11 +1121,12 @@ describe('start page built at a later month', () => {
       ['Agentic dev workflows', '10+ yrs'],
       ['JavaScript / TypeScript', '10+ yrs'],
       ['Node.js', '10+ yrs'],
+      ['System integration', '10+ yrs'],
       ['Rust', '10+ yrs'],
       ['Engineering leadership', '10+ yrs'],
-      ['System integration', '10+ yrs'],
       ['React', '10+ yrs'],
       ['Solid.js', '10+ yrs'],
+      ['Python', '3 yrs'],
     ]);
   });
 });

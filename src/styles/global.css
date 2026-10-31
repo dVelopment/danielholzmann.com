@@ -44,7 +44,7 @@
  * Safari (macOS and iOS) spills even exact 297mm, likely by flooring the page height to whole pixels. 1122px fits.
  */
 @utility page {
-  @apply mx-auto box-content min-h-screen max-w-[1120px] px-[clamp(16px,4vw,48px)] print:m-0 print:box-border print:flex print:h-[1122px] print:w-[210mm] print:min-h-0 print:flex-col print:gap-7 print:px-14 print:pt-14 print:pb-12 print:text-[13px];
+  @apply mx-auto box-content min-h-screen max-w-[1120px] px-[clamp(16px,4vw,48px)] print:m-0 print:box-border print:flex print:h-[1122px] print:w-[210mm] print:min-h-0 print:flex-col print:gap-3.5 print:px-14 print:pt-10 print:pb-8 print:text-[13px];
 }
 
 /*
