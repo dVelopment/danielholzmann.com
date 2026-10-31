@@ -1,0 +1,22 @@
+---
+/**
+ * Floating section nav for a scrolled page: back to the top, then each screen section in page order. Short
+ * labels without the header's `./` keep the pill inside a 320px phone. Keyboard focus inside it stops the
+ * scroll fade, so a focused link never sits faded or hidden.
+ */
+const links = [
+  { href: "#skills", label: "skills" },
+  { href: "#about", label: "about" },
+  { href: "#work", label: "work" },
+  { href: "#cv", label: "cv" },
+  { href: "#contact", label: "contact" },
+];
+---
+
+<nav
+  aria-label="Sections"
+  class="scroll-reveal fixed inset-x-0 bottom-4 z-10 mx-auto flex w-fit items-center gap-3 rounded-full border border-line-strong bg-surface/90 px-4 py-2 text-xs backdrop-blur-sm has-focus-visible:animate-none sm:right-6 sm:bottom-6 sm:left-auto print:hidden"
+>
+  <a href="#" class="text-fg"><span aria-hidden="true">↑ </span>top</a>
+  {links.map(({ href, label }) => <a href={href}>{label}</a>)}
+</nav>

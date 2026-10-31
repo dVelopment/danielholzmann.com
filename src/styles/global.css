@@ -46,6 +46,28 @@
   @apply mx-auto box-content min-h-screen max-w-[1120px] px-[clamp(16px,4vw,48px)] print:m-0 print:box-border print:flex print:h-[297mm] print:w-[210mm] print:min-h-0 print:flex-col print:gap-7 print:px-14 print:pt-14 print:pb-12 print:text-[13px];
 }
 
+/*
+ * Hidden (and out of the Tab order) at the top of the page, faded in over the first 160px of scroll, so a
+ * floating control stays out of the header's way. Browsers without scroll-driven animations always show it.
+ */
+@utility scroll-reveal {
+  /* Longhands: the minifier would fold a shorthand and the timeline into `animation`, which can't hold one. */
+  @supports (animation-timeline: scroll()) {
+    animation-name: scroll-reveal;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: scroll();
+    animation-range: 0 160px;
+  }
+}
+
+@keyframes scroll-reveal {
+  from {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
 @layer base {
   html {
     print-color-adjust: exact;

@@ -21,7 +21,12 @@ const rows = skills.map((skill) => {
 <section id="skills" aria-labelledby="skills-h" class="flex flex-col gap-5 print:gap-2">
   <div class="flex flex-wrap items-baseline justify-between gap-3">
     <SectionHeading id="skills-h"><TextPair screen="skills --level" print="skills" /></SectionHeading>
-    <p class="text-xs text-muted print:hidden">radar: skill level · 1–{RADAR_RINGS} · bars: years of experience</p>
+    {/* Two lines on narrow screens, each phrase whole; one line with a separator from `sm` up. */}
+    <p class="flex flex-col text-xs text-muted sm:flex-row sm:gap-2 print:hidden">
+      <span>radar: skill level · 1–{RADAR_RINGS}</span>
+      <span class="hidden sm:inline">·</span>
+      <span>bars: years of experience</span>
+    </p>
   </div>
   <div
     class="flex flex-wrap items-center gap-10 rounded-[10px] border border-line bg-surface p-[clamp(20px,3vw,40px)] print:contents"
