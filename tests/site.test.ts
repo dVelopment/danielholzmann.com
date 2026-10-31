@@ -752,7 +752,7 @@ describe('start page', () => {
 
     test('profile words career and leadership years in whole decades', () => {
       expect(texts(home.print, '#about p')).toEqual([
-        "AI engineer building production-grade agents and agentic workflows that solve real problems, backed by over two decades of hands-on full-stack engineering. Through more than 10 years of leading engineering teams, I have always kept writing code myself. I like to get the most out of what's already there: connecting agents, modern web apps and legacy systems. I help teams put coding agents to productive use without compromising on code quality — and I stay in control: I write code, set the architecture and review what goes to production.",
+        "AI engineer building production-grade agents and agentic workflows that solve real problems. This is backed by over two decades of hands-on full-stack engineering. Through more than 10 years of leading engineering teams, I have always kept writing code myself. I like to get the most out of what's already there: connecting agents, modern web apps and legacy systems. I help teams put coding agents to productive use without compromising on code quality, while staying in control: writing code where it matters, set the architecture, review, and decide what goes to production.",
       ]);
     });
 
@@ -999,7 +999,7 @@ describe('start page built at a later month', () => {
 
   test('the printed CV counts up to that month too', () => {
     expect(texts(later.print, '#about p')[0]).toStartWith(
-      'AI engineer building production-grade agents and agentic workflows that solve real problems, backed by over three decades of hands-on full-stack engineering. Through more than 20 years of leading engineering teams',
+      'AI engineer building production-grade agents and agentic workflows that solve real problems. This is backed by over three decades of hands-on full-stack engineering. Through more than 20 years of leading engineering teams',
     );
     expect(printedSkills(later.print)).toEqual([
       ['AI agents', '10+ yrs'],
