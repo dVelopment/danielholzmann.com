@@ -4,7 +4,7 @@
 
 Personal portfolio website for Daniel Holzmann (danielholzmann.com). A single-page CV/portfolio site positioned around AI engineering: a terminal-style screen page that prints as a one-page A4 CV from the same DOM.
 
-The designs in `design/` are the pixel and text source of truth, except where an ADR overrides them (ADR 0002, 0003: focus area wording, levels and order). Read `docs/adr/0001-astro-on-bun-single-dom-screen-and-print.md` before changing stack, styling, layout or the focus areas/jobs data model, and `docs/adr/0002-focus-areas-ranked-by-hand-set-focus-level.md` and `docs/adr/0003-radar-shows-skill-level-bars-show-experience.md` before changing how focus areas are ranked. Terms (focus area, skill level, experience) follow `GLOSSARY.md`. The rebuild is tracked in issue #28 (tickets #29–#33).
+The designs in `design/` are the pixel and text source of truth, except where an ADR overrides them (ADR 0002, 0003: focus area wording, levels and order). Read `docs/adr/0001-astro-on-bun-single-dom-screen-and-print.md` before changing stack, styling, layout or the focus areas/jobs data model, and `docs/adr/0002-focus-areas-ranked-by-hand-set-focus-level.md` and `docs/adr/0003-radar-shows-skill-level-bars-show-experience.md` before changing how focus areas are ranked or displayed. Terms (focus area, skill level, experience) follow `GLOSSARY.md`. The rebuild is tracked in issue #28 (tickets #29–#33).
 
 ## Tech Stack
 

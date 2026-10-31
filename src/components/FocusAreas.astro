@@ -10,7 +10,7 @@ const chart = radar(radarAxes.map(({ name, radarLabel, level }) => ({ label: rad
 const ariaLabel = `Focus area radar, skill level out of ${RADAR_RINGS}: ${radarAxes
   .map(({ name, level }) => `${name} ${level}`)
   .join(", ")}`;
-/** List rows in list order, each keeping its radar index, so data-focus-area pairs the row with its axis, plus its years and bar width (%, capped at DETAIL_CAP). */
+/** List rows in list order, each keeping its radar index, so data-focus-area pairs the row with its axis, plus its years and bar width (% of DETAIL_CAP years, full from there). */
 const rows = focusAreas.map((area) => {
   const years = yearsSince(area.start, buildMonth);
   return { ...area, index: radarAxes.indexOf(area), years, bar: (Math.min(years, DETAIL_CAP) * 100) / DETAIL_CAP };
@@ -68,8 +68,9 @@ const rows = focusAreas.map((area) => {
                 <TextPair screen={name} print={cvName} />
               </span>
               {/*
-                Screen readers hear the skill level from the sr-only text, then the experience as shown. The print
-                color is important so a row still hovered or focused when the page prints doesn't carry the accent.
+                Screen readers hear the skill level from the sr-only text, then the experience as shown. The print color
+                is `!important`: it must beat the hover/focus accent, including FocusAreasHighlight.astro's unlayered
+                `:has()` rule, so a row still hovered or focused when the page prints keeps the CV's ink.
               */}
               <span class="sr-only print:hidden">{` skill level ${level} of ${RADAR_RINGS}, `}</span>
               <span

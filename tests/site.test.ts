@@ -890,7 +890,7 @@ describe('the start page in Chromium (Playwright)', () => {
     await page.locator('#focus-areas li').nth(5).focus();
     await page.keyboard.press('Tab');
     expect(await states()).toEqual(onlySystemIntegration);
-    // Printed while still focused: the years keep the CV's ink, like every other row.
+    // Printed while still focused: the years keep the CV's muted ink (`ink-muted`), like every other row.
     await page.emulateMedia({ media: 'print' });
     const printed = await page.evaluate(() =>
       [...document.querySelectorAll('#focus-areas [data-experience]')].map(
@@ -901,6 +901,7 @@ describe('the start page in Chromium (Playwright)', () => {
     await page.emulateMedia({ media: 'screen' });
     // Hovering System integration's radar label lights its list item too.
     await page.evaluate(() => (document.activeElement as HTMLElement).blur());
+    expect(await states()).toEqual(Array(9).fill('plain unlit 0'));
     await page.hover('#focus-areas text[data-focus-area="4"]');
     expect(await states()).toEqual(onlySystemIntegration);
     await page.close();
