@@ -750,7 +750,7 @@ describe('start page', () => {
       expect(home.html).not.toMatch(/\[(YEAR|DEGREE|LANGUAGES)\]/);
     });
 
-    test('profile spells career and leadership years out in whole decades', () => {
+    test('profile words career and leadership years in whole decades', () => {
       expect(texts(home.print, '#about p')).toEqual([
         "AI engineer building production-grade agents and agentic workflows that solve real problems, backed by over two decades of hands-on full-stack engineering. Through more than 10 years of leading engineering teams, I have always kept writing code myself. I like to get the most out of what's already there: connecting agents, modern web apps and legacy systems. I help teams put coding agents to productive use without compromising on code quality — and I stay in control: I write code, set the architecture and review what goes to production.",
       ]);

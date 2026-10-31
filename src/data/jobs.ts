@@ -81,5 +81,5 @@ export function careerYearsAt(month: Month): number {
   return Math.max(...jobs.map((job) => yearsSince(job.start, month)));
 }
 
-/** Career length in prose ("N+ years"), in whole decades: `20+`, then `30+` from Feb 2036. */
+/** Career length in prose, in whole decades: `20`, then `30` from Feb 2036. The screen says "N+ years", the CV "over two decades". */
 export const careerYears = floorToDecade(careerYearsAt(buildMonth));

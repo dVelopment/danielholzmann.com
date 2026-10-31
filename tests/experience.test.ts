@@ -88,7 +88,9 @@ describe('decadesInWords', () => {
 
   test('refuses counts it has no words for, so the build fails instead of printing nonsense', () => {
     for (const years of [0, 15, 60])
-      expect(() => decadesInWords(years)).toThrow(`no words for ${years} years`);
+      expect(() => decadesInWords(years)).toThrow(
+        `no words for ${years} years`,
+      );
   });
 });
 

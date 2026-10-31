@@ -71,7 +71,7 @@ export const radarAxes: readonly Skill[] = [
   leadership,
 ];
 
-/** Years of leading teams in prose ("N+ years"), in whole decades: `10+`, then `20+` from 2035. */
+/** Years of leading teams in prose, in whole decades: `10`, then `20` from 2035. The screen says "N+ years", the CV "more than N years". */
 export const leadershipYears = floorToDecade(
   yearsSince(leadership.start, buildMonth),
 );

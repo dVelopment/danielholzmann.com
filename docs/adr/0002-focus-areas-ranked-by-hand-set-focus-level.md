@@ -1,6 +1,6 @@
 # 2. Focus areas ranked by a hand-set focus level
 
-- Status: accepted; partly superseded by [ADR 0003](0003-radar-shows-skill-level-bars-show-experience.md): the focus level term and meaning, decisions 2–4's bar width, `N/5` label, hover swap and print note, the fixed bars and spoken "focus level N of 5" in its consequences, and System integration in place of Solid.js; and by [ADR 0004](0004-skills-again.md): decision 1's Focus areas name
+- Status: accepted; partly superseded by [ADR 0003](0003-radar-shows-skill-level-bars-show-experience.md): the focus level term and meaning, decisions 2–4's bar width, `N/5` label, hover swap and print note, the fixed bars and spoken "focus level N of 5" in its consequences, and System integration in place of Solid.js; and by [ADR 0004](0004-skills-again.md): decision 1's Focus areas name and decision 3's `N+` wording for the printed profile
 - Date: 2026-10-31
 - Spec: [#39](https://github.com/dVelopment/danielholzmann.com/issues/39), ticket [#40](https://github.com/dVelopment/danielholzmann.com/issues/40)
 - Partly supersedes: [ADR 0001](0001-astro-on-bun-single-dom-screen-and-print.md) decision 3's "print reorders skills via CSS `order`" clause, and decision 5's per-surface caps, stored fields and exact career and leadership counts in prose (focus areas also store a hand-set level; experience and its `10+` cap stay)
