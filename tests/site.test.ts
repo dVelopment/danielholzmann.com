@@ -441,6 +441,8 @@ describe('start page', () => {
     );
     const [radarImage] = each(home.html, '#focus-areas svg');
     expect(radarImage.attrs.role).toBe('img');
+    // HTMLRewriter lowercases attribute names.
+    expect(radarImage.attrs.viewbox).toBe('-170 0 640 410');
     expect(radarImage.attrs['aria-label']).toBe(
       'Focus area radar, focus level out of 5: JavaScript / TypeScript 4, Node.js 3, React 2, System integration 3, Rust 4, AI agents 5, Agentic development workflows 5, Engineering leadership 4',
     );
@@ -553,6 +555,24 @@ describe('start page', () => {
         expect(
           each(home.html, `#focus-areas ${tag}[data-focus-area="${i}"]`),
         ).toHaveLength(1);
+    // Each index's dot sits on that axis's level vertex and its spoke ends on that axis's outer ring.
+    const vertices = LEVEL_POLYGON.split(' ');
+    const spokeEnds =
+      '200,40 313.1,86.9 360,200 313.1,313.1 200,360 86.9,313.1 40,200 86.9,86.9'.split(
+        ' ',
+      );
+    for (const i of indices) {
+      const [dot] = each(
+        home.html,
+        `#focus-areas circle[data-focus-area="${i}"]`,
+      );
+      const [spoke] = each(
+        home.html,
+        `#focus-areas line[data-focus-area="${i}"]`,
+      );
+      expect(`${dot.attrs.cx},${dot.attrs.cy}`).toBe(vertices[Number(i)]);
+      expect(`${spoke.attrs.x2},${spoke.attrs.y2}`).toBe(spokeEnds[Number(i)]);
+    }
     const head = home.html.slice(0, home.html.indexOf('</head>'));
     const style = [...head.matchAll(/<style>([^<]*)<\/style>/g)]
       .map((m) => m[1])
@@ -846,6 +866,35 @@ describe('the start page in Chromium (Playwright)', () => {
         .map((text) => text.textContent);
     });
     expect(outside).toEqual([]);
+    await page.close();
+  });
+
+  test('an item shows its level until keyboard focus reveals its experience and lights its radar dot', async () => {
+    const page = await openPage('screen');
+    const opacities = () =>
+      page.evaluate(() =>
+        [...document.querySelectorAll('#focus-areas li')].map((li) => {
+          const axis = li.getAttribute('data-focus-area');
+          const opacity = (el: Element | null) => getComputedStyle(el!).opacity;
+          return [
+            opacity(li.querySelector('[data-level]')),
+            opacity(li.querySelector('[data-experience]')),
+            opacity(
+              document.querySelector(
+                `#focus-areas circle[data-focus-area="${axis}"]`,
+              ),
+            ),
+          ].join(' ');
+        }),
+      );
+    // Level shown, experience and dot hidden: [level, experience, dot] opacity per item.
+    expect(await opacities()).toEqual(Array(8).fill('1 0 0'));
+    // Tab from Engineering leadership onto System integration.
+    await page.locator('#focus-areas li').nth(4).focus();
+    await page.keyboard.press('Tab');
+    expect(await opacities()).toEqual(
+      Array.from({ length: 8 }, (_, i) => (i === 5 ? '0 1 1' : '1 0 0')),
+    );
     await page.close();
   });
 

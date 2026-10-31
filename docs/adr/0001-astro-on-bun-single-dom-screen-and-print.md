@@ -1,6 +1,6 @@
 # 1. Astro on Bun, one DOM for screen and print, build-time experience numbers
 
-- Status: accepted; decision 5's skill caps per surface and decision 3's print reordering partly superseded by [ADR 0002](0002-focus-areas-ranked-by-hand-set-focus-level.md)
+- Status: accepted; partly superseded by [ADR 0002](0002-focus-areas-ranked-by-hand-set-focus-level.md): decision 3's CSS-`order` clause, and decision 5's per-surface caps and stored fields
 - Date: 2026-10-30
 - Spec: [#28](https://github.com/dVelopment/danielholzmann.com/issues/28), tickets #29–#33
 

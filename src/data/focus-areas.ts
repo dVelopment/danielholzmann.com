@@ -1,7 +1,7 @@
 import { type Month, yearsSince } from '../lib/experience';
 import { buildMonth } from './build';
 
-/** How much weight a focus area gets today; set by hand, independent of experience. */
+/** How much weight a focus area gets today; set by hand, independent of experience. One radar ring per level: keep in step with RADAR_RINGS. */
 type FocusLevel = 1 | 2 | 3 | 4 | 5;
 
 export interface FocusArea {

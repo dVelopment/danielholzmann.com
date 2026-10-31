@@ -3,7 +3,7 @@
 - Status: accepted
 - Date: 2026-10-31
 - Spec: [#39](https://github.com/dVelopment/danielholzmann.com/issues/39), ticket [#40](https://github.com/dVelopment/danielholzmann.com/issues/40)
-- Partly supersedes: [ADR 0001](0001-astro-on-bun-single-dom-screen-and-print.md) decision 5 (skill caps per surface) and the "print reorders skills via CSS `order`" clause of decision 3
+- Partly supersedes: [ADR 0001](0001-astro-on-bun-single-dom-screen-and-print.md) decision 3's "print reorders skills via CSS `order`" clause, and decision 5's per-surface caps and stored fields (focus areas also store a hand-set level; experience and its `10+` cap stay)
 
 ## Context
 
@@ -18,7 +18,8 @@ The skills radar, bars and list labels showed years of experience, capped at `5+
 
 ## Consequences
 
-- Levels express intent and never move on their own: a later build changes the years shown, not the radar, bars, labels or order. Changing emphasis is a data edit in `src/data/focus-areas.ts`.
+- Levels express intent and never move on their own: a later build changes the years shown, not the radar, bars, `N/5` labels or order. Changing emphasis is a data edit in `src/data/focus-areas.ts`.
 - Screen and print tell the same story in the same order; ties are resolved by the hand-kept order, not by a sort rule.
 - Screen readers hear each list item as name, "focus level N of 5" and the experience; the visual `N/5` and the bar are hidden from them.
 - Whoever adds or renames a focus area also places it in the radar order so its label fits; a Playwright test checks every radar label against the viewBox.
+- Where the wording, levels or order differ from `design/` (heading, caption, ring labels, System integration in place of Solid.js), this ADR wins; the design files are not updated.
