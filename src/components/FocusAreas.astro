@@ -1,35 +1,28 @@
 ---
 import { buildMonth } from "../data/build";
-import { cvSkills, DETAIL_CAP, listSkills, skills } from "../data/skills";
-import { cappedYears, yearsLabel, yearsSince } from "../lib/experience";
+import { DETAIL_CAP, focusAreas, radarAxes } from "../data/focus-areas";
+import { yearsLabel, yearsSince } from "../lib/experience";
 import { points, radar, RADAR_CENTER, RADAR_RINGS } from "../lib/radar";
 import SectionHeading from "./SectionHeading.astro";
 import TextPair from "./TextPair.astro";
 
-const items = skills.map((skill) => ({
-  name: skill.name,
-  label: skill.radarLabel ?? [skill.name],
-  years: yearsSince(skill.start, buildMonth),
-}));
-const chart = radar(items);
-const ariaLabel = `Skill radar, years of experience capped at ${RADAR_RINGS}+: ${items
-  .map(({ name, years }) => `${name} ${cappedYears(years, RADAR_RINGS)}`)
+const chart = radar(radarAxes.map(({ name, radarLabel, level }) => ({ label: radarLabel ?? [name], value: level })));
+const ariaLabel = `Focus area radar, focus level out of ${RADAR_RINGS}: ${radarAxes
+  .map(({ name, level }) => `${name} ${level}`)
   .join(", ")}`;
-/**
- * List rows keep their radar index, so data-skill still pairs each row with its axis. Print reorders them into
- * the CV order with CSS `order`, which is safe there: paper has no focus.
- */
-const rows = listSkills.map((skill) => {
-  const index = skills.indexOf(skill);
-  return { ...items[index], index, cvName: skill.cvName, cvIndex: cvSkills.indexOf(skill) };
-});
+/** List rows in list order, each keeping its radar index, so data-focus-area pairs the row with its axis. */
+const rows = focusAreas.map((area) => ({
+  ...area,
+  index: radarAxes.indexOf(area),
+  years: yearsSince(area.start, buildMonth),
+}));
 ---
 
-{/* data-skill ties each skill's list item, radar label, spoke and dot together for SkillsHighlight.astro. */}
-<section id="skills" aria-labelledby="skills-h" class="flex flex-col gap-5 print:gap-2">
+{/* data-focus-area ties each focus area's list item, radar label, spoke and dot together for FocusAreasHighlight.astro. */}
+<section id="focus-areas" aria-labelledby="focus-areas-h" class="flex flex-col gap-5 print:gap-2">
   <div class="flex flex-wrap items-baseline justify-between gap-3">
-    <SectionHeading id="skills-h"><TextPair screen="skills --years" print="skills" /></SectionHeading>
-    <p class="text-xs text-muted print:hidden">scale: years of hands-on experience · max {RADAR_RINGS}+</p>
+    <SectionHeading id="focus-areas-h"><TextPair screen="focus-areas --level" print="focus areas" /></SectionHeading>
+    <p class="text-xs text-muted print:hidden">scale: focus level · 1–{RADAR_RINGS}</p>
   </div>
   <div
     class="flex flex-wrap items-center gap-10 rounded-[10px] border border-line bg-surface p-[clamp(20px,3vw,40px)] print:contents"
@@ -42,7 +35,7 @@ const rows = listSkills.map((skill) => {
     >
       <g stroke-width="1" class="fill-none stroke-line">
         {chart.rings.map((ring, k) => <polygon points={points(ring)} class:list={{ "stroke-line-strong": k === RADAR_RINGS - 1 }} />)}
-        {chart.spokes.map(({ x, y }, i) => <line x1={RADAR_CENTER} y1={RADAR_CENTER} x2={x} y2={y} data-skill={i} />)}
+        {chart.spokes.map(({ x, y }, i) => <line x1={RADAR_CENTER} y1={RADAR_CENTER} x2={x} y2={y} data-focus-area={i} />)}
       </g>
       <polygon
         points={points(chart.vertices)}
@@ -51,14 +44,14 @@ const rows = listSkills.map((skill) => {
         stroke-linejoin="round"
         class="fill-accent stroke-accent"
       />
-      {chart.vertices.map(({ x, y }, i) => <circle cx={x} cy={y} r="4" data-skill={i} class="fill-accent opacity-0" />)}
+      {chart.vertices.map(({ x, y }, i) => <circle cx={x} cy={y} r="4" data-focus-area={i} class="fill-accent opacity-0" />)}
       <g font-size="11" class="fill-muted">
         {chart.ringLabels.map(({ x, y, text }) => <text x={x} y={y}>{text}</text>)}
       </g>
       <g font-size="15" class="fill-fg">
         {
           chart.labels.map(({ x, anchor, lines }, i) => (
-            <text x={x} text-anchor={anchor} data-skill={i}>
+            <text x={x} text-anchor={anchor} data-focus-area={i}>
               {lines.map(({ y, text }) => <tspan x={x} y={y}>{text}</tspan>)}
             </text>
           ))
@@ -68,29 +61,28 @@ const rows = listSkills.map((skill) => {
     {/* role="list": WebKit drops list semantics from unstyled lists. */}
     <ul role="list" class="flex flex-[2_1_280px] flex-col gap-3.5 print:flex-none print:gap-[5px]">
       {
-        rows.map(({ name, cvName, years, index, cvIndex }) => (
-          <li
-            tabindex="0"
-            data-skill={index}
-            style={`--cv-order: ${cvIndex}`}
-            class="group flex flex-col gap-1.5 print:order-(--cv-order)"
-          >
+        rows.map(({ name, cvName, level, years, index }) => (
+          <li tabindex="0" data-focus-area={index} class="group flex flex-col gap-1.5">
             <div class="flex justify-between gap-3 text-[13px] print:gap-2">
               {/* One flex item, whichever medium's name shows; the color is the body's (fg, ink in print). */}
               <span>
                 <TextPair screen={name} print={cvName} />
               </span>
-              {/* Both values share one grid cell; screen readers get the detailed one only. Print shows the detail. */}
+              {/*
+                Level and experience share one grid cell, swapped on hover/focus. Screen readers get the level from the
+                sr-only text and the experience as shown. Print shows the experience only.
+              */}
               <span class="grid justify-items-end">
                 <span
                   aria-hidden="true"
-                  data-capped
+                  data-level
                   class="col-start-1 row-start-1 text-muted group-hover:opacity-0 group-focus-visible:opacity-0 print:hidden"
                 >
-                  {yearsLabel(years, RADAR_RINGS)}
+                  {level}/{RADAR_RINGS}
                 </span>
+                <span class="sr-only print:hidden">{` focus level ${level} of ${RADAR_RINGS}, `}</span>
                 <span
-                  data-detail
+                  data-experience
                   class="col-start-1 row-start-1 text-accent opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 print:font-mono print:text-xs print:whitespace-nowrap print:text-ink-muted print:opacity-100"
                 >
                   {yearsLabel(years, DETAIL_CAP)}
@@ -98,15 +90,12 @@ const rows = listSkills.map((skill) => {
               </span>
             </div>
             <div aria-hidden="true" class="h-1 rounded-xs bg-line print:hidden">
-              <div
-                class="h-1 rounded-xs bg-accent"
-                style={`width: ${(Math.min(years, RADAR_RINGS) / RADAR_RINGS) * 100}%`}
-              />
+              <div class="h-1 rounded-xs bg-accent" style={`width: ${(level * 100) / RADAR_RINGS}%`} />
             </div>
           </li>
         ))
       }
     </ul>
-    <p class="mt-0.5 hidden text-xs text-ink-muted print:block">Years of hands-on experience</p>
+    <p class="mt-0.5 hidden text-xs text-ink-muted print:block">Ordered by focus · years of hands-on experience</p>
   </div>
 </section>

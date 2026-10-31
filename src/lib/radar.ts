@@ -1,19 +1,19 @@
 /**
  * Radar chart geometry in the design's SVG coordinates (viewBox `-170 0 640 410`). Pure: no Astro, no clock.
- * Axes run clockwise from the top; values are years, capped at the outer ring.
+ * Axes run clockwise from the top; values are ring numbers (focus levels), one ring per level.
  */
 
 export const RADAR_CENTER = 200;
-/** SVG units per year: ring `n` sits at `n * RADAR_UNIT` from the center. */
+/** SVG units per ring: ring `n` sits at `n * RADAR_UNIT` from the center. */
 export const RADAR_UNIT = 32;
-/** Ring count: rings `1y`, `2y`, … and an outer `N+` at N = RADAR_RINGS; larger values are drawn on it. */
+/** Ring count, labelled `1` to RADAR_RINGS: the focus level scale. */
 export const RADAR_RINGS = 5;
 
 /** Distance from the center to an axis label's anchor point. */
 const LABEL_RADIUS = 178;
 /** Baseline distance between the lines of a multi-line label. */
 const LINE_HEIGHT = 19;
-// Baseline below the anchor point, so the 15px axis labels (font size set in Skills.astro) sit level with,
+// Baseline below the anchor point, so the 15px axis labels (font size set in FocusAreas.astro) sit level with,
 // or clear below, the chart.
 const DROP_LEVEL = 5;
 const DROP_BELOW_SIDE = 14;
@@ -27,8 +27,8 @@ const EPSILON = 1e-9;
 export interface RadarAxis {
   /** Label lines, top to bottom; at least one. */
   readonly label: readonly [string, ...string[]];
-  /** Years; drawn capped at RADAR_RINGS. */
-  readonly years: number;
+  /** Ring the data polygon reaches on this axis, 0 to RADAR_RINGS. */
+  readonly value: number;
 }
 
 export interface Point {
@@ -44,7 +44,7 @@ export interface AxisLabel {
 }
 
 export interface Radar {
-  /** Rings from the innermost (1 year) to the outer one. */
+  /** Rings from the innermost (level 1) to the outer one. */
   readonly rings: readonly (readonly Point[])[];
   readonly ringLabels: readonly (Point & { readonly text: string })[];
   /** Outer end of each axis spoke. */
@@ -117,12 +117,10 @@ export function radar(axes: readonly RadarAxis[]): Radar {
     ringLabels: levels.map((level) => ({
       x: RADAR_CENTER + RING_LABEL_X,
       y: RADAR_CENTER - level * RADAR_UNIT - RING_LABEL_RISE,
-      text: level < RADAR_RINGS ? `${level}y` : `${level}+`,
+      text: `${level}`,
     })),
     spokes: indices.map((i) => pointAt(i, n, RADAR_RINGS * RADAR_UNIT)),
-    vertices: axes.map(({ years }, i) =>
-      pointAt(i, n, Math.min(Math.max(years, 0), RADAR_RINGS) * RADAR_UNIT),
-    ),
+    vertices: axes.map(({ value }, i) => pointAt(i, n, value * RADAR_UNIT)),
     labels: axes.map(({ label }, i) => axisLabel(i, n, label)),
   };
 }
