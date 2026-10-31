@@ -472,7 +472,7 @@ describe('start page', () => {
       expect(span.attrs.class).not.toMatch(/\b(hidden|sr-only|invisible)\b/);
   });
 
-  test('radar rings, ring labels and axis labels land on the design coordinates', () => {
+  test('radar rings, ring labels and axis labels land on the coordinates computed from the design geometry', () => {
     // Rings depend on the axis count only; radar.test.ts pins them against the design.
     const nineAxes = Array.from({ length: 9 }, () => ({
       label: ['x'] as const,
@@ -862,11 +862,15 @@ describe('the start page in Chromium (Playwright)', () => {
     await page.close();
   });
 
-  test('keyboard focus on an item turns its years accent and lights its radar dot', async () => {
+  test('keyboard focus on an item or hovering its radar label turns its years accent and lights its radar label and dot, but not on paper', async () => {
     const page = await openPage('screen');
+    // Per item: years and radar label against the accent (the dots' fill), then the dot's opacity.
     const states = () =>
-      page.evaluate(() =>
-        [...document.querySelectorAll('#focus-areas li')].map((li) => {
+      page.evaluate(() => {
+        const accent = getComputedStyle(
+          document.querySelector('#focus-areas circle')!,
+        ).fill;
+        return [...document.querySelectorAll('#focus-areas li')].map((li) => {
           const axis = li.getAttribute('data-focus-area');
           const years = getComputedStyle(li.querySelector('[data-experience]')!).color;
           const label = getComputedStyle(
@@ -875,17 +879,30 @@ describe('the start page in Chromium (Playwright)', () => {
           const dot = getComputedStyle(
             document.querySelector(`#focus-areas circle[data-focus-area="${axis}"]`)!,
           ).opacity;
-          return `${years === label ? 'accent' : 'plain'} ${dot}`;
-        }),
-      );
-    // [years color matches the lit label, dot opacity] per item: nothing lit yet.
-    expect(await states()).toEqual(Array(9).fill('plain 0'));
+          return `${years === accent ? 'accent' : 'plain'} ${label === accent ? 'lit' : 'unlit'} ${dot}`;
+        });
+      });
+    const onlySystemIntegration = Array.from({ length: 9 }, (_, i) =>
+      i === 6 ? 'accent lit 1' : 'plain unlit 0',
+    );
+    expect(await states()).toEqual(Array(9).fill('plain unlit 0'));
     // Tab from Engineering leadership onto System integration.
     await page.locator('#focus-areas li').nth(5).focus();
     await page.keyboard.press('Tab');
-    expect(await states()).toEqual(
-      Array.from({ length: 9 }, (_, i) => (i === 6 ? 'accent 1' : 'plain 0')),
+    expect(await states()).toEqual(onlySystemIntegration);
+    // Printed while still focused: the years keep the CV's ink, like every other row.
+    await page.emulateMedia({ media: 'print' });
+    const printed = await page.evaluate(() =>
+      [...document.querySelectorAll('#focus-areas [data-experience]')].map(
+        (el) => getComputedStyle(el).color,
+      ),
     );
+    expect(printed).toEqual(Array(9).fill('rgb(78, 89, 82)'));
+    await page.emulateMedia({ media: 'screen' });
+    // Hovering System integration's radar label lights its list item too.
+    await page.evaluate(() => (document.activeElement as HTMLElement).blur());
+    await page.hover('#focus-areas text[data-focus-area="4"]');
+    expect(await states()).toEqual(onlySystemIntegration);
     await page.close();
   });
 

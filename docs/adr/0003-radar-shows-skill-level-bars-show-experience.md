@@ -2,11 +2,11 @@
 
 - Status: accepted
 - Date: 2026-10-31
-- Partly supersedes: [ADR 0002](0002-focus-areas-ranked-by-hand-set-focus-level.md) decisions 2–4 (what the level means, the bar width, the `N/5` label and its hover swap, the print note) and its "System integration in place of Solid.js"
+- Partly supersedes: [ADR 0002](0002-focus-areas-ranked-by-hand-set-focus-level.md) decision 1's "focus level" term, decisions 2–4 (what the level means, the bar width, the `N/5` label and its hover swap, the print note), its consequences on fixed bars and the spoken "focus level N of 5", and its "System integration in place of Solid.js"; [ADR 0001](0001-astro-on-bun-single-dom-screen-and-print.md)'s per-item hover reveal, now a hover accent
 
 ## Context
 
-ADR 0002 gave each focus area a hand-set focus level and showed it three times: as the radar value, as the bar width and as the list's `N/5` label. The radar and the bars told the same story twice, and experience only showed on hover. The level also read better as how well Daniel masters an area than as how much weight he puts on it.
+ADR 0002 gave each focus area a hand-set focus level and showed it three times: as the radar value, as the bar width and as the list's `N/5` label. The radar and the bars told the same story twice, and on screen experience only showed on hover or keyboard focus. The level also read better as how well Daniel masters an area than as how much weight he puts on it.
 
 ## Decision
 

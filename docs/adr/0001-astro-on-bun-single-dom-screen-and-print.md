@@ -1,6 +1,6 @@
 # 1. Astro on Bun, one DOM for screen and print, build-time experience numbers
 
-- Status: accepted; partly superseded by [ADR 0002](0002-focus-areas-ranked-by-hand-set-focus-level.md): decision 3's CSS-`order` clause, and decision 5's per-surface caps, stored fields and exact career and leadership counts in prose
+- Status: accepted; partly superseded by [ADR 0002](0002-focus-areas-ranked-by-hand-set-focus-level.md): decision 3's CSS-`order` clause, and decision 5's per-surface caps, stored fields and exact career and leadership counts in prose; and by [ADR 0003](0003-radar-shows-skill-level-bars-show-experience.md): the per-item hover reveal, now a hover accent
 - Date: 2026-10-30
 - Spec: [#28](https://github.com/dVelopment/danielholzmann.com/issues/28), tickets #29–#33
 
