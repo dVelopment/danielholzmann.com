@@ -89,6 +89,23 @@ export function floorToDecade(years: number): number {
   return Math.floor(years / 10) * 10;
 }
 
+/** A whole number of decades in CV prose: `10` → `a decade`, `20` → `two decades`, up to `five decades`. */
+export function decadesInWords(years: number): string {
+  const words = [
+    'a decade',
+    'two decades',
+    'three decades',
+    'four decades',
+    'five decades',
+  ];
+  const word = years % 10 === 0 ? words[years / 10 - 1] : undefined;
+  if (!word)
+    throw new Error(
+      `no words for ${years} years: expected 10–50 in whole decades`,
+    );
+  return word;
+}
+
 /** Length of a job counting both its first and last month: `6 yrs 10 mos`, `1 yr 3 mos`, `5 yrs`. */
 export function durationLabel(start: Month, end: Month): string {
   const months = monthIndex(end) - monthIndex(start) + 1;

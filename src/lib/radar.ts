@@ -13,7 +13,7 @@ export const RADAR_RINGS = 5;
 const LABEL_RADIUS = 178;
 /** Baseline distance between the lines of a multi-line label. */
 const LINE_HEIGHT = 19;
-// Baseline below the anchor point, so the 15px axis labels (font size set in FocusAreas.astro) sit level with,
+// Baseline below the anchor point, so the 15px axis labels (font size set in Skills.astro) sit level with,
 // or clear below, the chart.
 const DROP_LEVEL = 5;
 const DROP_BELOW_SIDE = 14;

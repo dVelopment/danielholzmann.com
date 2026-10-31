@@ -4,14 +4,14 @@ Daniel Holzmann's portfolio: one page that is both the terminal-style site and t
 
 ## Language
 
-**Focus area**:
+**Skill**:
 A field of work Daniel presents on the radar and in the list, such as AI agents or system integration.
-_Avoid_: Skill
+_Avoid_: Focus area
 
 **Skill level**:
-How well Daniel masters a focus area today, from 1 to 5. Set by hand; independent of experience.
+How well Daniel masters a skill today, from 1 to 5. Set by hand; independent of experience.
 _Avoid_: Focus level, proficiency
 
 **Experience**:
-Full years of hands-on work in a focus area or career, counted from its start month to the build month. Shown in years, capped at `10+`, on each focus area's list row and bar.
+Full years of hands-on work in a skill or career, counted from its start month to the build month. Shown in years, capped at `10+`, on each skill's list row and bar.
 _Avoid_: Seniority

@@ -1,7 +1,8 @@
 ---
 /** About on screen; the CV's profile paragraph in print. */
-import { leadershipYears } from "../data/focus-areas";
+import { leadershipYears } from "../data/skills";
 import { careerYears } from "../data/jobs";
+import { decadesInWords } from "../lib/experience";
 import SectionHeading from "./SectionHeading.astro";
 import TextPair from "./TextPair.astro";
 ---
@@ -17,8 +18,9 @@ import TextPair from "./TextPair.astro";
     <p class="print:hidden">
       {leadershipYears}+ years of leading and supporting engineering teams — always hands-on, always writing code myself. Today I build AI agents and agentic workflows for production and connect them with modern web apps and (legacy) systems. I help teams put coding agents to productive use without compromising on code quality.
     </p>
+    {/* The CV words the counts ("over two decades", "more than 10 years"); the screen keeps the terminal's `N+ years`. */}
     <p class="hidden print:block">
-      AI engineer building production-grade agents and agentic workflows that solve real problems, backed by {careerYears}+ years of hands-on full-stack engineering. Through {leadershipYears}+ years of leading engineering teams, I have always kept writing code myself. I like to get the most out of what's already there: connecting agents, modern web apps and legacy systems. I help teams put coding agents to productive use without compromising on code quality — and I stay in control: I write code, set the architecture and review what goes to production.
+      AI engineer building production-grade agents and agentic workflows that solve real problems, backed by over {decadesInWords(careerYears)} of hands-on full-stack engineering. Through more than {leadershipYears} years of leading engineering teams, I have always kept writing code myself. I like to get the most out of what's already there: connecting agents, modern web apps and legacy systems. I help teams put coding agents to productive use without compromising on code quality — and I stay in control: I write code, set the architecture and review what goes to production.
     </p>
   </div>
 </section>
