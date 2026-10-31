@@ -39,11 +39,12 @@
 
 /*
  * The page shell. Screen: content-box, so as in the terminal design the 1120px max width excludes the side
- * padding. Print: the CV design's fixed A4 canvas holding header, columns and footer. The design rounds A4 to
- * 794×1123px; exact 210×297mm (793.7×1122.5px) keeps Firefox from spilling the extra half pixel onto a blank page.
+ * padding. Print: the CV design's A4 canvas holding header, columns and footer. The design rounds A4 to
+ * 794×1123px, but A4 is 793.7×1122.5px: Firefox spills a taller canvas's extra half pixel onto a blank page, and
+ * Safari (macOS and iOS) spills even exact 297mm, likely by flooring the page height to whole pixels. 1122px fits.
  */
 @utility page {
-  @apply mx-auto box-content min-h-screen max-w-[1120px] px-[clamp(16px,4vw,48px)] print:m-0 print:box-border print:flex print:h-[297mm] print:w-[210mm] print:min-h-0 print:flex-col print:gap-7 print:px-14 print:pt-14 print:pb-12 print:text-[13px];
+  @apply mx-auto box-content min-h-screen max-w-[1120px] px-[clamp(16px,4vw,48px)] print:m-0 print:box-border print:flex print:h-[1122px] print:w-[210mm] print:min-h-0 print:flex-col print:gap-7 print:px-14 print:pt-14 print:pb-12 print:text-[13px];
 }
 
 /*
