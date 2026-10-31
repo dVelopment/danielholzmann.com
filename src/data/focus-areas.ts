@@ -71,5 +71,5 @@ export const radarAxes: readonly FocusArea[] = [
 /** Full years of leading teams, as in the about text ("N+ years"). */
 export const leadershipYears = yearsSince(leadership.start, buildMonth);
 
-/** Cap for the hover/focus experience and the printed CV (`10+ yrs`). */
+/** Cap for the experience revealed on hover/keyboard focus and printed on the CV (`10+ yrs`). */
 export const DETAIL_CAP = 10;

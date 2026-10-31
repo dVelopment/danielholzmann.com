@@ -22,4 +22,4 @@ The skills radar, bars and list labels showed years of experience, capped at `5+
 - Screen and print tell the same story in the same order; ties are resolved by the hand-kept order, not by a sort rule.
 - Screen readers hear each list item as name, "focus level N of 5" and the experience; the visual `N/5` and the bar are hidden from them.
 - Whoever adds or renames a focus area also places it in the radar order so its label fits; a Playwright test checks every radar label against the viewBox.
-- Where the wording, levels or order differ from `design/` (heading, caption, ring labels, System integration in place of Solid.js), this ADR wins; the design files are not updated.
+- Where the wording, levels or order differ from `design/` (heading, caption, ring labels, `N/5` labels and bars, print order and note, System integration in place of Solid.js), this ADR wins; the design files are not updated.
