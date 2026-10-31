@@ -1,8 +1,8 @@
 import { floorToDecade, type Month, yearsSince } from '../lib/experience';
 import { buildMonth } from './build';
 
-/** How much weight a focus area gets today; set by hand, independent of experience. One radar ring per level: keep in step with RADAR_RINGS. */
-type FocusLevel = 1 | 2 | 3 | 4 | 5;
+/** How well Daniel masters a focus area today; set by hand, independent of experience. One radar ring per level: keep in step with RADAR_RINGS. */
+type SkillLevel = 1 | 2 | 3 | 4 | 5;
 
 export interface FocusArea {
   name: string;
@@ -12,7 +12,7 @@ export interface FocusArea {
   radarLabel?: readonly [string, ...string[]];
   /** Month hands-on experience began; a bare year counts from January. */
   start: Month;
-  level: FocusLevel;
+  level: SkillLevel;
 }
 
 const aiAgents: FocusArea = { name: 'AI agents', start: 2024, level: 5 };
@@ -26,7 +26,7 @@ const agentic: FocusArea = {
 const typescript: FocusArea = {
   name: 'JavaScript / TypeScript',
   start: 2016,
-  level: 4,
+  level: 5,
 };
 const rust: FocusArea = { name: 'Rust', start: 2024, level: 4 };
 const leadership: FocusArea = {
@@ -39,21 +39,23 @@ const integration: FocusArea = {
   name: 'System integration',
   radarLabel: ['System', 'integration'],
   start: 2006,
-  level: 3,
+  level: 4,
 };
-const node: FocusArea = { name: 'Node.js', start: 2012, level: 3 };
-const react: FocusArea = { name: 'React', start: 2016, level: 2 };
+const node: FocusArea = { name: 'Node.js', start: 2012, level: 5 };
+const react: FocusArea = { name: 'React', start: 2016, level: 4 };
+const solid: FocusArea = { name: 'Solid.js', start: 2025, level: 3 };
 
-/** List order on screen and on the printed CV, kept by hand: highest focus level first. */
+/** List order on screen and on the printed CV, kept by hand: highest skill level first. */
 export const focusAreas: readonly FocusArea[] = [
   aiAgents,
   agentic,
   typescript,
+  node,
   rust,
   leadership,
   integration,
-  node,
   react,
+  solid,
 ];
 
 /** Radar axis order, clockwise from the top; chosen so every label fits the design's radar. */
@@ -61,6 +63,7 @@ export const radarAxes: readonly FocusArea[] = [
   typescript,
   node,
   react,
+  solid,
   integration,
   rust,
   aiAgents,
@@ -73,5 +76,5 @@ export const leadershipYears = floorToDecade(
   yearsSince(leadership.start, buildMonth),
 );
 
-/** Cap for the experience revealed on hover/keyboard focus and printed on the CV (`10+ yrs`). */
+/** Cap for the years on each list row and its bar, on screen and on the printed CV (`10+ yrs`). */
 export const DETAIL_CAP = 10;
