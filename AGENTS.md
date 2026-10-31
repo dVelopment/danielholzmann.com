@@ -12,7 +12,7 @@ The designs in `design/` are the pixel and text source of truth. Read `docs/adr/
 - **Runtime**: Bun 1.4.2 only, no Node locally; the Nixpacks image keeps Node 22 (`NIXPACKS_NODE_VERSION`) solely to `npx` the pinned Bun. `bunfig.toml` sets `[run] bun = true`, so every `bun run` script (including Astro's `node`-shebang CLI) runs on Bun. `devenv.nix` provides Bun and runs `bun install --frozen-lockfile` on shell entry; a failure there is reported (✖) but the shell still opens
 - **Styling**: Tailwind v4 via `@tailwindcss/vite`, scanning only `src/`. Design tokens are `@theme` variables in `src/styles/global.css` (screen and print palettes, `mono`/`sans` fonts), which also defines the `page` utility (the screen shell, and in print the CV's exact 210×297mm A4 canvas, which the design rounds to 794×1123px). Colors only via token utilities, no inline styles; arbitrary values only where they mirror a `design/` value. Exceptions: the computed skill-bar width and the `--cv-order` custom property that orders the printed skills (`style` in `Skills.astro`), the generated `:has()` rules in `SkillsHighlight.astro`, which use the token variables (`var(--color-accent)`), and Layout's `<noscript>` rule. `theme-color` in `Layout.astro` and the manifest must match `--color-background`. Print styling uses the `print:` variant: every visible element carries its screen classes plus `print:` overrides, so a change to one design needs a check of the other medium
 - **Type checking**: TypeScript 7.1 (`tsc`) checks `.astro` files through `@astrojs/ts-content-mapper` (`contentMappers` in `tsconfig.json`, needs `--runExternalCode`)
-- **Tests**: Bun's test runner, tests in `tests/`
+- **Tests**: Bun's test runner, tests in `tests/`. The printed-CV fit check drives Playwright's headless Chromium (`playwright` dev dependency); its browser comes from `bunx playwright install chromium` (devenv runs it on shell entry)
 - **Deployment**: Dokploy with Nixpacks. `nixpacks.toml` installs and builds with `npx bun@1.4.2` because Nixpacks' bundled bun (1.2.10) can't parse `bun.lock` v2; bump that pin when upgrading local bun. Dokploy must serve `dist/`. The build needs no secrets, so a `GITHUB_TOKEN` left in Dokploy environments can be dropped
 
 ## Commands
@@ -22,7 +22,7 @@ bun run dev              # Dev server (localhost:4321)
 bun run build            # Production build into dist/
 bun run serve            # Preview dist/ on localhost:4321
 bun run typecheck        # astro sync + tsc over .ts and .astro
-bun test                 # Unit-tests the experience math, radar geometry, CV skill order and photo densities, builds the site (once now, once with tests/fixed-clock.ts freezing a later date) and checks the output as screen and print show it
+bun test                 # Unit-tests the experience math, radar geometry, CV skill order and photo densities, builds the site (once now, once with tests/fixed-clock.ts freezing a later date), checks the output as screen and print show it, and prints the CV in headless Chromium (fits the A4 canvas, one-page PDF)
 bunx prettier --write .  # Format .ts/.json/.md/.css (`.prettierrc`; not a dependency; no Astro plugin, so .astro files are formatted by hand)
 ```
 

@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
+import { chromium, type Browser } from 'playwright';
 import { imageMetadata } from 'astro/assets/utils';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -794,6 +795,85 @@ describe('start page', () => {
         expect(each(home.print, screenOnly)).toEqual([]);
       }
     });
+  });
+});
+
+describe('printed CV in Chromium (Playwright)', () => {
+  let server: Bun.Server<undefined>;
+  let browser: Browser;
+  beforeAll(async () => {
+    server = Bun.serve({
+      port: 0,
+      async fetch(req) {
+        const { pathname } = new URL(req.url);
+        const served = file(
+          pathname.endsWith('/') ? `${pathname}index.html` : pathname,
+        );
+        return (await served.exists())
+          ? new Response(served)
+          : new Response('not found', { status: 404 });
+      },
+    });
+    browser = await chromium.launch();
+  }, 60_000);
+
+  afterAll(async () => {
+    await browser?.close();
+    server?.stop(true);
+  });
+
+  /** The start page in print media, with the web fonts loaded so line breaks match a real print. */
+  async function printPage() {
+    const page = await browser.newPage({
+      viewport: { width: 794, height: 1123 },
+    });
+    await page.emulateMedia({ media: 'print' });
+    await page.goto(server.url.href, { waitUntil: 'networkidle' });
+    await page.evaluate(() => document.fonts.ready);
+    return page;
+  }
+
+  test('the CV fits its A4 canvas: nothing overflows the page or its box', async () => {
+    const page = await printPage();
+    const { scrollHeight, overflowing } = await page.evaluate(() => {
+      const canvas = document.querySelector('.page')!;
+      const bottom = canvas.getBoundingClientRect().bottom;
+      return {
+        scrollHeight: canvas.scrollHeight,
+        // Visible elements reaching past the canvas, or layout boxes whose content spills out of them:
+        // the columns shrink to the space above the footer, so a column grown too long overflows itself
+        // first. Text elements are left out: a tight line height lets glyphs overhang by design.
+        overflowing: [...canvas.querySelectorAll('*')]
+          .filter((el) => {
+            if (!el.checkVisibility()) return false;
+            const spills =
+              el.matches('div, section, ol, ul, li, footer') &&
+              getComputedStyle(el).display !== 'contents' &&
+              el.scrollHeight > el.clientHeight + 1;
+            return spills || el.getBoundingClientRect().bottom > bottom + 0.5;
+          })
+          .map((el) => el.outerHTML.slice(0, 80)),
+      };
+    });
+    expect(overflowing).toEqual([]);
+    expect(scrollHeight).toBeLessThanOrEqual(1123);
+    await page.close();
+  });
+
+  test('printing gives exactly one A4 page', async () => {
+    const page = await printPage();
+    const pdf = new TextDecoder('latin1').decode(
+      await page.pdf({ preferCSSPageSize: true, printBackground: true }),
+    );
+    expect(pdf.match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
+    // A4 in PDF points is 595.28 × 841.89; Chromium rounds the box to whole CSS pixels.
+    const [width, height] = pdf
+      .match(/\/MediaBox\s*\[\s*0 0 ([\d.]+) ([\d.]+)\s*\]/)!
+      .slice(1)
+      .map(Number);
+    expect(width).toBeCloseTo(595.28, 0);
+    expect(height).toBeCloseTo(841.89, 0);
+    await page.close();
   });
 });
 

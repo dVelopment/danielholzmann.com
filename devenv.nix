@@ -16,6 +16,13 @@
     before = [ "devenv:enterShell" ];
   };
 
+  # Headless Chromium for the printed-CV check in `bun test`; downloads once, then no-ops.
+  tasks."site:browsers" = {
+    exec = "bunx playwright install chromium";
+    after = [ "site:install" ];
+    before = [ "devenv:enterShell" ];
+  };
+
   # https://devenv.sh/processes/ — `devenv up` runs the Astro dev server.
   processes.astro.exec = "bun run dev";
 
