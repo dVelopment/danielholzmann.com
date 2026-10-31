@@ -612,18 +612,17 @@ describe('start page', () => {
     ]);
   });
 
-  test('hero and footer count up to the build month', () => {
+  test('hero and footer count up to the build month, career in whole decades', () => {
     const now = new Date();
-    // Career starts with the earliest job (Feb 2006); the current role is the latest ongoing one.
-    const years = yearsSince({ year: 2006, month: 2 }, monthOf(now));
+    // Career starts with the earliest job (Feb 2006): 20 full years from Feb 2026 until Feb 2036.
     // Compressed HTML drops whitespace between blocks, so check each block's text.
     for (const text of [
-      `backed by ${years}+ years of hands-on software engineering.`,
-      `exp: ${years}+ years`,
+      'backed by 20+ years of hands-on software engineering.',
+      'exp: 20+ years',
       'now: Head of Engineering @ Sitelevel.ai',
     ])
       expect(home.text['#top']).toContain(text);
-    expect(meta(home, 'description')).toContain(`${years}+ years`);
+    expect(meta(home, 'description')).toContain('20+ years');
     expect(home.text.footer).toBe(`daniel@portfolio:~$ © ${monthOf(now).year}`);
   });
 
@@ -662,7 +661,7 @@ describe('start page', () => {
       // On screen: the hero's kicker and tagline, without the CV's kicker or title line.
       expect(texts(home.screen, '#top p')).toEqual([
         '$ whoami',
-        `${profile.title}. I build production-grade AI agents and ship software with agentic development workflows — coding agents, backed by ${yearsSince({ year: 2006, month: 2 }, monthOf(new Date()))}+ years of hands-on software engineering.`,
+        `${profile.title}. I build production-grade AI agents and ship software with agentic development workflows — coding agents, backed by 20+ years of hands-on software engineering.`,
       ]);
     });
 
@@ -751,10 +750,9 @@ describe('start page', () => {
       expect(home.html).not.toMatch(/\[(YEAR|DEGREE|LANGUAGES)\]/);
     });
 
-    test('profile counts exact career years up to the build month, leadership capped at 10+', () => {
-      const career = yearsSince({ year: 2006, month: 2 }, monthOf(new Date()));
+    test('profile counts career and leadership years in whole decades', () => {
       expect(texts(home.print, '#about p')).toEqual([
-        `Developer, AI engineer and engineering leader with ${career}+ years of hands-on software engineering and 10+ years of leading and supporting engineering teams. I build production-grade AI agents and ship software with agentic development workflows: coding agents take on much of the implementation, and I step in myself wherever it counts — architecture, the tricky parts, review, and the call on what goes to production.`,
+        'Developer, AI engineer and engineering leader with 20+ years of hands-on software engineering and 10+ years of leading and supporting engineering teams. I build production-grade AI agents and ship software with agentic development workflows: coding agents take on much of the implementation, and I step in myself wherever it counts — architecture, the tricky parts, review, and the call on what goes to production.',
       ]);
     });
 
@@ -942,19 +940,19 @@ describe('start page built at a later month', () => {
   let later: Page;
   beforeAll(async () => {
     laterDir = mkdtempSync(join(tmpdir(), 'site-build-later-'));
-    build(laterDir, '2029-07-15T12:00:00Z');
+    build(laterDir, '2036-07-15T12:00:00Z');
     later = await page('index.html', laterDir);
   }, 60_000);
 
   afterAll(() => rmSync(laterDir, { recursive: true, force: true }));
 
   test('every derived number counts up to that month, none is typed in', () => {
-    // Jul 2029: career since Feb 2006 = 23 full years; leadership (14 years) stays capped at 10+.
-    for (const text of ['backed by 23+ years', 'exp: 23+ years'])
+    // Jul 2036: career since Feb 2006 = 30 full years, leadership since Jan 2015 = 21 → 20+.
+    for (const text of ['backed by 30+ years', 'exp: 30+ years'])
       expect(later.text['#top']).toContain(text);
-    expect(meta(later, 'description')).toContain('23+ years');
-    expect(later.text['#about']).toContain('10+ years of leading');
-    expect(later.text.footer).toBe('daniel@portfolio:~$ © 2029');
+    expect(meta(later, 'description')).toContain('30+ years');
+    expect(later.text['#about']).toContain('20+ years of leading');
+    expect(later.text.footer).toBe('daniel@portfolio:~$ © 2036');
     // Finished jobs keep their length; ongoing ones stay "present".
     expect(texts(later.screen, '#work li > p:first-of-type')).toEqual([
       'Mar 2025 — present',
@@ -963,12 +961,12 @@ describe('start page built at a later month', () => {
       'Feb 2011 — 5 yrs',
       'Feb 2006 — present',
     ]);
-    // Experience passes the 10 cap at different months; levels, bars, order and the radar stay put.
+    // Every experience has passed the 10 cap; levels, bars, order and the radar stay put.
     expect(focusAreaRows(later.screen)).toEqual([
-      ['AI agents', '5/5', '5 yrs', 'width: 100%'],
-      ['Agentic development workflows', '5/5', '4 yrs', 'width: 100%'],
+      ['AI agents', '5/5', '10+ yrs', 'width: 100%'],
+      ['Agentic development workflows', '5/5', '10+ yrs', 'width: 100%'],
       ['JavaScript / TypeScript', '4/5', '10+ yrs', 'width: 80%'],
-      ['Rust', '4/5', '5 yrs', 'width: 80%'],
+      ['Rust', '4/5', '10+ yrs', 'width: 80%'],
       ['Engineering leadership', '4/5', '10+ yrs', 'width: 80%'],
       ['System integration', '3/5', '10+ yrs', 'width: 60%'],
       ['Node.js', '3/5', '10+ yrs', 'width: 60%'],
@@ -982,14 +980,13 @@ describe('start page built at a later month', () => {
 
   test('the printed CV counts up to that month too', () => {
     expect(texts(later.print, '#about p')[0]).toStartWith(
-      'Developer, AI engineer and engineering leader with 23+ years of hands-on software engineering and 10+ years of leading',
+      'Developer, AI engineer and engineering leader with 30+ years of hands-on software engineering and 20+ years of leading',
     );
-    // Under 10 years shows exactly; JS/TS, leadership, system integration, Node.js and React passed the 10 cap.
     expect(printedFocusAreas(later.print)).toEqual([
-      ['AI agents', '5 yrs'],
-      ['Agentic dev workflows', '4 yrs'],
+      ['AI agents', '10+ yrs'],
+      ['Agentic dev workflows', '10+ yrs'],
       ['JavaScript / TypeScript', '10+ yrs'],
-      ['Rust', '5 yrs'],
+      ['Rust', '10+ yrs'],
       ['Engineering leadership', '10+ yrs'],
       ['System integration', '10+ yrs'],
       ['Node.js', '10+ yrs'],

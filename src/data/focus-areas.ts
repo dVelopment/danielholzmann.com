@@ -1,4 +1,4 @@
-import { type Month, yearsSince } from '../lib/experience';
+import { floorToDecade, type Month, yearsSince } from '../lib/experience';
 import { buildMonth } from './build';
 
 /** How much weight a focus area gets today; set by hand, independent of experience. One radar ring per level: keep in step with RADAR_RINGS. */
@@ -68,8 +68,10 @@ export const radarAxes: readonly FocusArea[] = [
   leadership,
 ];
 
-/** Full years of leading teams, as in the about text ("N+ years"). */
-export const leadershipYears = yearsSince(leadership.start, buildMonth);
+/** Years of leading teams in prose ("N+ years"), in whole decades: `10+`, then `20+` from 2035. */
+export const leadershipYears = floorToDecade(
+  yearsSince(leadership.start, buildMonth),
+);
 
 /** Cap for the experience revealed on hover/keyboard focus and printed on the CV (`10+ yrs`). */
 export const DETAIL_CAP = 10;
