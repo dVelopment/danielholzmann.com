@@ -7,22 +7,21 @@ import SectionHeading from "./SectionHeading.astro";
 import TextPair from "./TextPair.astro";
 
 const chart = radar(radarAxes.map(({ name, radarLabel, level }) => ({ label: radarLabel ?? [name], value: level })));
-const ariaLabel = `Focus area radar, focus level out of ${RADAR_RINGS}: ${radarAxes
+const ariaLabel = `Focus area radar, skill level out of ${RADAR_RINGS}: ${radarAxes
   .map(({ name, level }) => `${name} ${level}`)
   .join(", ")}`;
 /** List rows in list order, each keeping its radar index, so data-focus-area pairs the row with its axis. */
-const rows = focusAreas.map((area) => ({
-  ...area,
-  index: radarAxes.indexOf(area),
-  years: yearsSince(area.start, buildMonth),
-}));
+const rows = focusAreas.map((area) => {
+  const years = yearsSince(area.start, buildMonth);
+  return { ...area, index: radarAxes.indexOf(area), years, bar: (Math.min(years, DETAIL_CAP) * 100) / DETAIL_CAP };
+});
 ---
 
 {/* data-focus-area ties each focus area's list item, radar label, spoke and dot together for FocusAreasHighlight.astro. */}
 <section id="focus-areas" aria-labelledby="focus-areas-h" class="flex flex-col gap-5 print:gap-2">
   <div class="flex flex-wrap items-baseline justify-between gap-3">
     <SectionHeading id="focus-areas-h"><TextPair screen="focus-areas --level" print="focus areas" /></SectionHeading>
-    <p class="text-xs text-muted print:hidden">scale: focus level · 1–{RADAR_RINGS}</p>
+    <p class="text-xs text-muted print:hidden">radar: skill level · 1–{RADAR_RINGS} · bars: years of experience</p>
   </div>
   <div
     class="flex flex-wrap items-center gap-10 rounded-[10px] border border-line bg-surface p-[clamp(20px,3vw,40px)] print:contents"
@@ -61,41 +60,29 @@ const rows = focusAreas.map((area) => ({
     {/* role="list": WebKit drops list semantics from unstyled lists. */}
     <ul role="list" class="flex flex-[2_1_280px] flex-col gap-3.5 print:flex-none print:gap-[5px]">
       {
-        rows.map(({ name, cvName, level, years, index }) => (
+        rows.map(({ name, cvName, level, years, bar, index }) => (
           <li tabindex="0" data-focus-area={index} class="group flex flex-col gap-1.5">
             <div class="flex justify-between gap-3 text-[13px] print:gap-2">
               {/* One flex item, whichever medium's name shows; the color is the body's (fg, ink in print). */}
               <span>
                 <TextPair screen={name} print={cvName} />
               </span>
-              {/*
-                Level and experience share one grid cell, swapped on hover/:focus-visible. Screen readers get the level
-                from the sr-only text and the experience as shown. Print shows the experience only.
-              */}
-              <span class="grid justify-items-end">
-                <span
-                  aria-hidden="true"
-                  data-level
-                  class="col-start-1 row-start-1 text-muted group-hover:opacity-0 group-focus-visible:opacity-0 print:hidden"
-                >
-                  {level}/{RADAR_RINGS}
-                </span>
-                <span class="sr-only print:hidden">{` focus level ${level} of ${RADAR_RINGS}, `}</span>
-                <span
-                  data-experience
-                  class="col-start-1 row-start-1 text-accent opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 print:font-mono print:text-xs print:whitespace-nowrap print:text-ink-muted print:opacity-100"
-                >
-                  {yearsLabel(years, DETAIL_CAP)}
-                </span>
+              {/* Screen readers hear the skill level from the sr-only text, then the experience as shown. */}
+              <span class="sr-only print:hidden">{` skill level ${level} of ${RADAR_RINGS}, `}</span>
+              <span
+                data-experience
+                class="text-muted group-hover:text-accent group-focus-visible:text-accent print:font-mono print:text-xs print:whitespace-nowrap print:text-ink-muted"
+              >
+                {yearsLabel(years, DETAIL_CAP)}
               </span>
             </div>
             <div aria-hidden="true" class="h-1 rounded-xs bg-line print:hidden">
-              <div class="h-1 rounded-xs bg-accent" style={`width: ${(level * 100) / RADAR_RINGS}%`} />
+              <div class="h-1 rounded-xs bg-accent" style={`width: ${bar}%`} />
             </div>
           </li>
         ))
       }
     </ul>
-    <p class="mt-0.5 hidden text-xs text-ink-muted print:block">Ordered by focus · years of hands-on experience</p>
+    <p class="mt-0.5 hidden text-xs text-ink-muted print:block">Ordered by skill level · years of hands-on experience</p>
   </div>
 </section>
