@@ -346,16 +346,16 @@ describe('start page', () => {
   test('about prints both paragraphs, leadership years in whole decades', () => {
     expect(texts(home.screen, '#about p')).toEqual([
       'I started coding for fun as a teenager — it grew into my main occupation. At 30, after years of autodidact training, I studied Software Engineering at the University of Applied Sciences Upper Austria in Hagenberg.',
-      '10+ years of leading and supporting engineering teams — always hands-on, always writing code myself. Today I build AI agents and agentic workflows for production and connect them with modern web apps and (legacy) systems. I help teams put coding agents to productive use without compromising on code quality.',
+      '10+ years of leading and supporting engineering teams — always hands-on, always writing code myself. Founding engineer three times: I built the tech stack from scratch, and twice the team. Today I build AI agents and agentic workflows for production and connect them with modern web apps and (legacy) systems. I help teams put coding agents to productive use without compromising on code quality.',
       "At heart, I'm still a tinkerer.",
     ]);
   });
 
   /** Each job's summary, the same on screen and in print. */
   const SUMMARIES = [
-    'Leading engineering hands-on; building production-ready AI agents and agentic workflows with evals, guardrails and traceability, e.g. reasoning over financial reports whose numbers trace back to the source data. Agents in pilot with design partners on their real ERP data; ERP integrations, CI, DevOps and DX.',
-    'Led engineering hands-on for all websites and apps on the PIMS; LLM-based classification of NPS feedback; financial/KPI data warehouse; CI, DevOps, DX.',
-    'Web, Android and iOS apps with Google Maps route planning.',
+    'Founding engineer; leading engineering hands-on: production-ready AI agents and agentic workflows with evals, guardrails and traceability, e.g. reasoning over financial reports traced to source data. In pilot with design partners on real ERP data; ERP integrations, CI, DevOps, DX.',
+    'Founding engineer; led engineering hands-on for all websites and apps on the PIMS; LLM-based classification of NPS feedback; financial/KPI data warehouse; CI, DevOps, DX.',
+    'Founding engineer; web, Android and iOS apps with route planning.',
     'Consultant and technical lead as a freelancer.',
     'Web development, specialized in React and Node.js.',
   ];
@@ -374,8 +374,8 @@ describe('start page', () => {
       'Mar 2025 — present',
       'May 2018 — 6 yrs 10 mos',
       'Jan 2017 — 1 yr 3 mos',
-      'Feb 2011 — 5 yrs',
-      'Feb 2006 — present',
+      'Jan 2011 — 5 yrs 2 mos',
+      'Feb 2006 — 11 yrs',
     ]);
     expect(texts(home.screen, '#work h3')).toEqual([
       'Head of Engineering · Sitelevel.ai',
@@ -670,7 +670,7 @@ describe('start page', () => {
       // On screen: the hero's kicker and tagline, without the CV's kicker or title line.
       expect(texts(home.screen, '#top p')).toEqual([
         '$ whoami',
-        `${profile.title}. I build production-grade AI agents and ship software with agentic development workflows — coding agents, backed by 20+ years of hands-on software engineering.`,
+        `${profile.title}. I build production-ready AI agents and ship software with agentic development workflows — coding agents, backed by 20+ years of hands-on software engineering.`,
       ]);
     });
 
@@ -707,33 +707,34 @@ describe('start page', () => {
       }
     });
 
-    test('sections in print order: aside (contact, skills, education), then profile and experience', () => {
+    test('sections in print order: aside (contact, skills, education, languages), then profile and experience', () => {
       expect(texts(home.print, 'h2')).toEqual([
         '## contact',
         '## skills',
         '## education',
+        '## languages',
         '## profile',
-        '## experience',
+        '## main experience',
       ]);
     });
 
-    test('contact lists the location, then mail, site, LinkedIn, GitHub and Mastodon as bare links, each with a decorative icon', () => {
+    test('contact lists the location, then mail, phone, site, LinkedIn and GitHub as bare links, each with a decorative icon', () => {
       expect(texts(home.print, '#cv-contact p')).toEqual([
         'Vienna, Austria',
         'daniel@danielholzmann.com',
+        '+43 699 / 1749 1000',
         'danielholzmann.com',
         'linkedin.com/in/daniel-holzmann-bb35235b',
         'github.com/dVelopment',
-        'wien.rocks/@dVelopment',
       ]);
       expect(
         each(home.print, '#cv-contact a').map(({ attrs }) => attrs.href),
       ).toEqual([
         `mailto:${profile.email}`,
+        'tel:+4369917491000',
         profile.siteUrl,
         social.linkedin,
         social.github,
-        social.mastodon,
       ]);
       const icons = each(home.print, '#cv-contact p > svg');
       expect(icons).toHaveLength(6);
@@ -754,19 +755,21 @@ describe('start page', () => {
       }
     });
 
-    test('education prints title, school and period · degree; no languages section while unset', () => {
+    test('education prints title, school and period · degree, then the languages', () => {
       expect(texts(home.print, '#cv-education p')).toEqual([
         'Software Engineering',
         'University of Applied Sciences Upper Austria, Hagenberg',
         '2011 — 2015 · BSc in Engineering',
       ]);
-      expect(each(home.html, '#cv-languages')).toEqual([]);
+      expect(texts(home.print, '#cv-languages p')).toEqual([
+        'German (native), English (business fluent)',
+      ]);
       expect(home.html).not.toMatch(/\[(YEAR|DEGREE|LANGUAGES)\]/);
     });
 
     test('profile words career and leadership years in whole decades', () => {
       expect(texts(home.print, '#about p')).toEqual([
-        "AI engineer building production-grade agents and agentic workflows that solve real problems. This is backed by over two decades of hands-on full-stack engineering. Through more than 10 years of leading engineering teams, I have always kept writing code myself. I like to get the most out of what's already there: connecting agents, modern web apps and legacy systems. I help teams put coding agents to productive use without compromising on code quality, while staying in control: writing code where it matters, set the architecture, review, and decide what goes to production.",
+        "AI engineer building production-ready agents and agentic workflows that solve real problems. This is backed by over two decades of hands-on full-stack engineering. Through more than 10 years of leading engineering teams, I have always kept writing code myself. Founding engineer three times: I built the tech stack from scratch, and twice the team. I like to get the most out of what's already there: connecting agents, modern web apps and legacy systems. I help teams put coding agents to productive use without compromising on code quality, while staying in control: writing code where it matters, set the architecture, review, and decide what goes to production.",
       ]);
     });
 
@@ -782,8 +785,8 @@ describe('start page', () => {
         '03/2025 — present',
         '05/2018 — 02/2025',
         '01/2017 — 03/2018',
-        '02/2011 — 01/2016',
-        '02/2006 — present',
+        '01/2011 — 02/2016',
+        '02/2006 — 01/2017',
       ]);
       expect(texts(home.print, '#work li > p:nth-of-type(2)')).toEqual(
         SUMMARIES,
@@ -1090,8 +1093,8 @@ describe('start page built at a later month', () => {
       'Mar 2025 — present',
       'May 2018 — 6 yrs 10 mos',
       'Jan 2017 — 1 yr 3 mos',
-      'Feb 2011 — 5 yrs',
-      'Feb 2006 — present',
+      'Jan 2011 — 5 yrs 2 mos',
+      'Feb 2006 — 11 yrs',
     ]);
     // Every ongoing experience has passed the 10 cap: full bars; Python stays at its 2011–2014 years; order and the radar stay put.
     expect(skillRows(later.screen)).toEqual([
@@ -1114,7 +1117,7 @@ describe('start page built at a later month', () => {
 
   test('the printed CV counts up to that month too', () => {
     expect(texts(later.print, '#about p')[0]).toStartWith(
-      'AI engineer building production-grade agents and agentic workflows that solve real problems. This is backed by over three decades of hands-on full-stack engineering. Through more than 20 years of leading engineering teams',
+      'AI engineer building production-ready agents and agentic workflows that solve real problems. This is backed by over three decades of hands-on full-stack engineering. Through more than 20 years of leading engineering teams',
     );
     expect(printedSkills(later.print)).toEqual([
       ['AI agents', '10+ yrs'],

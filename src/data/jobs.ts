@@ -27,7 +27,7 @@ export const jobs: readonly Job[] = [
     company: 'Sitelevel.ai',
     start: { year: 2025, month: 3 },
     summary:
-      'Leading engineering hands-on; building production-ready AI agents and agentic workflows with evals, guardrails and traceability, e.g. reasoning over financial reports whose numbers trace back to the source data. Agents in pilot with design partners on their real ERP data; ERP integrations, CI, DevOps and DX.',
+      'Founding engineer; leading engineering hands-on: production-ready AI agents and agentic workflows with evals, guardrails and traceability, e.g. reasoning over financial reports traced to source data. In pilot with design partners on real ERP data; ERP integrations, CI, DevOps, DX.',
     stack: [
       'Mastra',
       'TypeScript',
@@ -52,7 +52,7 @@ export const jobs: readonly Job[] = [
     start: { year: 2018, month: 5 },
     end: { year: 2025, month: 2 },
     summary:
-      'Led engineering hands-on for all websites and apps on the PIMS; LLM-based classification of NPS feedback; financial/KPI data warehouse; CI, DevOps, DX.',
+      'Founding engineer; led engineering hands-on for all websites and apps on the PIMS; LLM-based classification of NPS feedback; financial/KPI data warehouse; CI, DevOps, DX.',
     stack: [
       'TypeScript',
       'Node.js',
@@ -70,7 +70,8 @@ export const jobs: readonly Job[] = [
     company: 'Veho Technologies',
     start: { year: 2017, month: 1 },
     end: { year: 2018, month: 3 },
-    summary: 'Web, Android and iOS apps with Google Maps route planning.',
+    summary:
+      'Founding engineer; web, Android and iOS apps with route planning.',
     stack: [
       'TypeScript',
       'Node.js',
@@ -83,8 +84,8 @@ export const jobs: readonly Job[] = [
   {
     role: 'Lead Developer',
     company: 'atipso',
-    start: { year: 2011, month: 2 },
-    end: { year: 2016, month: 1 },
+    start: { year: 2011, month: 1 },
+    end: { year: 2016, month: 2 },
     summary: 'Consultant and technical lead as a freelancer.',
     stack: [
       'PHP',
@@ -101,6 +102,7 @@ export const jobs: readonly Job[] = [
     cvRole: 'Freelance Web Developer',
     company: 'danielholzmann.com',
     start: { year: 2006, month: 2 },
+    end: { year: 2017, month: 1 },
     summary: 'Web development, specialized in React and Node.js.',
     stack: [
       'TypeScript',

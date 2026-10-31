@@ -104,7 +104,8 @@ describe('durationLabel', () => {
   test('counts first and last month of the designed jobs', () => {
     expect(duration('Bond Vet')).toBe('6 yrs 10 mos');
     expect(duration('Veho Technologies')).toBe('1 yr 3 mos');
-    expect(duration('atipso')).toBe('5 yrs');
+    expect(duration('atipso')).toBe('5 yrs 2 mos');
+    expect(duration('danielholzmann.com')).toBe('11 yrs');
   });
 
   test('singular units and short jobs', () => {

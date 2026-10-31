@@ -7,6 +7,8 @@ export interface Profile {
   title: string;
   location: string;
   email: string;
+  /** As the printed CV shows it; the `tel:` link keeps only `+` and digits. */
+  phone: string;
   siteUrl: string;
   description: string;
   keywords: readonly string[];
@@ -19,8 +21,9 @@ export const profile: Profile = {
   title: 'AI Engineer & Full-Stack Developer',
   location: 'Vienna, Austria',
   email: 'daniel@danielholzmann.com',
+  phone: '+43 699 / 1749 1000',
   siteUrl: 'https://danielholzmann.com',
-  description: `Daniel Holzmann, AI engineer and full-stack developer: production-grade AI agents, agentic development workflows and ${careerYears}+ years of hands-on software engineering.`,
+  description: `Daniel Holzmann, AI engineer and full-stack developer: production-ready AI agents, agentic development workflows and ${careerYears}+ years of hands-on software engineering.`,
   keywords: [
     'daniel holzmann',
     'ai engineer',
@@ -61,4 +64,5 @@ export const education: readonly Education[] = [
 ];
 
 /** Languages for the printed CV, e.g. `German (native), English (fluent)`; no section when unset. */
-export const languages: string | undefined = undefined;
+export const languages: string | undefined =
+  'German (native), English (business fluent)';
