@@ -22,9 +22,9 @@ export const jobs: readonly Job[] = [
     company: 'Sitelevel.ai',
     start: { year: 2025, month: 3 },
     summary:
-      'Leading engineering and building production-grade AI agents and agentic workflows.',
+      'Leading engineering hands-on and building production-grade AI agents and agentic workflows.',
     cvSummary:
-      'Leading and supporting the engineering team; building production-grade AI agents and agentic workflows.',
+      'Leading and supporting the engineering team while coding hands-on; building production-grade AI agents and agentic workflows.',
   },
   {
     role: 'Principal Software Architect',
@@ -32,9 +32,9 @@ export const jobs: readonly Job[] = [
     start: { year: 2018, month: 5 },
     end: { year: 2025, month: 2 },
     summary:
-      'Led the engineering team; all in-house and client-facing websites and apps.',
+      'Led the engineering team hands-on; all in-house and client-facing websites and apps.',
     cvSummary:
-      'Led the engineering team; responsible for all in-house and client-facing websites and apps.',
+      'Led the engineering team as a hands-on contributor; responsible for all in-house and client-facing websites and apps.',
   },
   {
     role: 'Lead Developer',

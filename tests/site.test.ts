@@ -12,7 +12,6 @@ import {
   yearsSince,
 } from '../src/lib/experience';
 import { points, radar } from '../src/lib/radar';
-import { jobs } from '../src/data/jobs';
 import { profile, social } from '../src/data/profile';
 
 // Builds the real site and checks what browsers, crawlers and link previews get.
@@ -323,8 +322,8 @@ describe('start page', () => {
     // leadership starts with the "Engineering leadership" skill (2015, i.e. Jan 2015).
     const years = yearsSince(2015, monthOf(new Date()));
     expect(texts(home.screen, '#about p')).toEqual([
-      'I started coding for fun as a teenager — it grew into my main occupation. At 30, after years of autodidact training, I studied Software Engineering at the University of Applied Sciences Upper Austria in Hagenberg.',
-      `${years}+ years of leading and supporting engineering teams. Today I build AI agents for production and work hands-on with coding agents in agentic development workflows.`,
+      "I started coding for fun as a teenager — it grew into my main occupation. At 30, after years of autodidact training, I studied Software Engineering at the University of Applied Sciences Upper Austria in Hagenberg. At heart, I'm still a tinkerer.",
+      `${years}+ years of leading and supporting engineering teams — always hands-on, always writing code myself. Today I build AI agents and agentic workflows for production and connect them with modern web apps and (legacy) systems. I help teams put coding agents to productive use without compromising on code quality.`,
     ]);
   });
 
@@ -343,9 +342,13 @@ describe('start page', () => {
       'Lead Developer · atipso',
       'Freelance · danielholzmann.com',
     ]);
-    expect(texts(home.screen, '#work li > p:nth-of-type(2)')).toEqual(
-      jobs.map((job) => job.summary),
-    );
+    expect(texts(home.screen, '#work li > p:nth-of-type(2)')).toEqual([
+      'Leading engineering hands-on and building production-grade AI agents and agentic workflows.',
+      'Led the engineering team hands-on; all in-house and client-facing websites and apps.',
+      'Web, Android and iOS apps.',
+      'Consultant and technical lead as a freelancer.',
+      'Web development, specialized in React and Node.js.',
+    ]);
     const dots = each(home.screen, '#work li > span').map((s) =>
       s.attrs.class.split(' ').includes('bg-accent'),
     );
@@ -744,7 +747,7 @@ describe('start page', () => {
       const career = yearsSince({ year: 2006, month: 2 }, now);
       const leadership = yearsSince(2015, now);
       expect(texts(home.print, '#about p')).toEqual([
-        `Developer, AI engineer and engineering leader with ${career}+ years of hands-on software engineering and ${leadership}+ years of leading and supporting engineering teams. I build production-grade AI agents and ship software with agentic development workflows: coding agents take on much of the implementation, and I step in myself wherever it counts — architecture, the tricky parts, review, and the call on what goes to production.`,
+        `AI engineer building production-grade agents and agentic workflows that solve real problems, backed by ${career}+ years of hands-on full-stack engineering. Through ${leadership}+ years of leading engineering teams, I have always kept writing code myself. I like to get the most out of what's already there: connecting agents, modern web apps and legacy systems. I help teams put coding agents to productive use without compromising on code quality — and I stay in control: I write code, set the architecture and review what goes to production.`,
       ]);
     });
 
@@ -764,8 +767,8 @@ describe('start page', () => {
         '02/2006 — present',
       ]);
       expect(texts(home.print, '#work li > p:nth-of-type(2)')).toEqual([
-        'Leading and supporting the engineering team; building production-grade AI agents and agentic workflows.',
-        'Led the engineering team; responsible for all in-house and client-facing websites and apps.',
+        'Leading and supporting the engineering team while coding hands-on; building production-grade AI agents and agentic workflows.',
+        'Led the engineering team as a hands-on contributor; responsible for all in-house and client-facing websites and apps.',
         'Development of web, Android and iOS apps.',
         'Consultant and technical lead as a freelancer.',
         'Web development, specialized in React and Node.js.',
@@ -893,7 +896,9 @@ describe('start page built at a later month', () => {
     for (const text of ['backed by 23+ years', 'exp: 23+ years'])
       expect(later.text['#top']).toContain(text);
     expect(meta(later, 'description')).toContain('23+ years');
-    expect(later.text['#about']).toContain('14+ years of leading');
+    expect(texts(later.screen, '#about p')[1]).toStartWith(
+      '14+ years of leading and supporting engineering teams',
+    );
     expect(later.text.footer).toBe('daniel@portfolio:~$ © 2029');
     // Finished jobs keep their length; ongoing ones stay "present".
     expect(texts(later.screen, '#work li > p:first-of-type')).toEqual([
@@ -929,7 +934,7 @@ describe('start page built at a later month', () => {
 
   test('the printed CV counts up to that month too', () => {
     expect(texts(later.print, '#about p')[0]).toStartWith(
-      'Developer, AI engineer and engineering leader with 23+ years of hands-on software engineering and 14+ years of leading',
+      'AI engineer building production-grade agents and agentic workflows that solve real problems, backed by 23+ years of hands-on full-stack engineering. Through 14+ years of leading engineering teams',
     );
     // Under 10 years shows exactly; JS/TS, leadership, React and Node.js passed the 10 cap.
     expect(printedSkills(later.print)).toEqual([
