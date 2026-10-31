@@ -1,12 +1,12 @@
 /**
  * Radar chart geometry in the design's SVG coordinates (viewBox `-170 0 640 410`). Pure: no Astro, no clock.
- * Axes run clockwise from the top; values are ring numbers (focus levels), one ring per level.
+ * Axes run clockwise from the top; values are ring numbers, 0 to RADAR_RINGS.
  */
 
 export const RADAR_CENTER = 200;
 /** SVG units per ring: ring `n` sits at `n * RADAR_UNIT` from the center. */
 export const RADAR_UNIT = 32;
-/** Ring count, labelled `1` to RADAR_RINGS: the focus level scale. */
+/** Ring count; rings are labelled `1` to RADAR_RINGS. */
 export const RADAR_RINGS = 5;
 
 /** Distance from the center to an axis label's anchor point. */
@@ -44,7 +44,7 @@ export interface AxisLabel {
 }
 
 export interface Radar {
-  /** Rings from the innermost (level 1) to the outer one. */
+  /** Rings from the innermost to the outer one. */
   readonly rings: readonly (readonly Point[])[];
   readonly ringLabels: readonly (Point & { readonly text: string })[];
   /** Outer end of each axis spoke. */

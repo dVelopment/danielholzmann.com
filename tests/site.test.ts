@@ -186,9 +186,15 @@ const FOCUS_AREAS: [string, string, number, Month][] = [
   ['Node.js', 'Node.js', 3, 2012],
   ['React', 'React', 2, 2016],
 ];
+/** Each focus area's experience at the build month, capped at 10. */
+const BUILD_EXPERIENCE = FOCUS_AREAS.map(([, , , start]) =>
+  yearsLabel(yearsSince(start, monthOf(new Date())), 10),
+);
 /** Data polygon of the levels in radar order (JS/TS 4, Node.js 3, React 2, System integration 3, Rust 4, AI agents 5, Agentic 5, leadership 4). */
 const LEVEL_POLYGON =
   '200,72 267.9,132.1 264,200 267.9,267.9 200,328 86.9,313.1 40,200 109.5,109.5';
+
+const NAMES = '#focus-areas li > div > span:first-child';
 
 /** Each focus area list item as [name, level label, experience label, bar style]. */
 function focusAreaRows(html: string) {
@@ -197,17 +203,29 @@ function focusAreaRows(html: string) {
   const bars = each(html, '#focus-areas li div[style]').map(
     (m) => m.attrs.style,
   );
-  return texts(html, '#focus-areas li > div > span:first-child').map(
-    (name, i) => [name, levels[i], experience[i], bars[i]],
-  );
+  return texts(html, NAMES).map((name, i) => [
+    name,
+    levels[i],
+    experience[i],
+    bars[i],
+  ]);
 }
 
 /** The printed CV's focus areas as [name, years], in document order: print doesn't reorder them. */
 function printedFocusAreas(print: string) {
-  const years = texts(print, '#focus-areas li [data-experience]');
-  return texts(print, '#focus-areas li > div > span:first-child').map(
-    (name, i) => [name, years[i]],
-  );
+  return focusAreaRows(print).map(([name, , experience]) => [name, experience]);
+}
+
+/** The radar's data polygon and its vertex dots, each as an SVG points string. */
+function radarShape(html: string) {
+  return {
+    polygon: each(html, '#focus-areas svg > polygon').map(
+      (p) => p.attrs.points,
+    ),
+    dots: each(html, '#focus-areas circle')
+      .map(({ attrs }) => `${attrs.cx},${attrs.cy}`)
+      .join(' '),
+  };
 }
 
 describe('start page', () => {
@@ -413,15 +431,11 @@ describe('start page', () => {
   });
 
   test('focus areas list in the agreed order with level labels and bars, revealing experience for the build month', () => {
-    const now = monthOf(new Date());
-    const experience = FOCUS_AREAS.map(([, , , start]) =>
-      yearsLabel(yearsSince(start, now), 10),
-    );
     expect(focusAreaRows(home.screen)).toEqual(
       FOCUS_AREAS.map(([name, , level], i) => [
         name,
         `${level}/5`,
-        experience[i],
+        BUILD_EXPERIENCE[i],
         `width: ${level * 20}%`,
       ]),
     );
@@ -434,14 +448,10 @@ describe('start page', () => {
       'scale: focus level · 1–5',
     ]);
     // Polygon and vertex dots sit on the ring of each level.
-    expect(
-      each(home.html, '#focus-areas svg > polygon').map((p) => p.attrs.points),
-    ).toEqual([LEVEL_POLYGON]);
-    expect(
-      each(home.html, '#focus-areas circle')
-        .map(({ attrs }) => `${attrs.cx},${attrs.cy}`)
-        .join(' '),
-    ).toBe(LEVEL_POLYGON);
+    expect(radarShape(home.html)).toEqual({
+      polygon: [LEVEL_POLYGON],
+      dots: LEVEL_POLYGON,
+    });
     // Screen readers skip the visual level label and the bar, and hear name, level and experience instead.
     expect(
       each(home.html, '#focus-areas [aria-hidden]').map(({ attrs, text }) =>
@@ -458,7 +468,7 @@ describe('start page', () => {
     expect(texts(spoken, '#focus-areas li')).toEqual(
       FOCUS_AREAS.map(
         ([name, , level], i) =>
-          `${name} focus level ${level} of 5, ${experience[i]}`,
+          `${name} focus level ${level} of 5, ${BUILD_EXPERIENCE[i]}`,
       ),
     );
     for (const span of each(home.html, '#focus-areas [data-experience]'))
@@ -530,7 +540,7 @@ describe('start page', () => {
     ]);
     // Each list item pairs with the radar label of the same focus area, whatever the list order.
     const labels = each(home.html, '#focus-areas svg text[data-focus-area]');
-    const names = focusAreaRows(home.screen).map(([name]) => name);
+    const names = texts(home.screen, NAMES);
     expect(
       indices.map((i) =>
         labels
@@ -701,12 +711,8 @@ describe('start page', () => {
     });
 
     test('focus areas in the screen order with years capped at 10, then the note', () => {
-      const now = monthOf(new Date());
       expect(printedFocusAreas(home.print)).toEqual(
-        FOCUS_AREAS.map(([, cvName, , start]) => [
-          cvName,
-          yearsLabel(yearsSince(start, now), 10),
-        ]),
+        FOCUS_AREAS.map(([, cvName], i) => [cvName, BUILD_EXPERIENCE[i]]),
       );
       expect(texts(home.print, '#focus-areas p')).toEqual([
         'Ordered by focus · years of hands-on experience',
@@ -924,14 +930,10 @@ describe('start page built at a later month', () => {
       ['Node.js', '3/5', '10+ yrs', 'width: 60%'],
       ['React', '2/5', '10+ yrs', 'width: 40%'],
     ]);
-    expect(
-      each(later.html, '#focus-areas svg > polygon').map((p) => p.attrs.points),
-    ).toEqual([LEVEL_POLYGON]);
-    expect(
-      each(later.html, '#focus-areas circle')
-        .map(({ attrs }) => `${attrs.cx},${attrs.cy}`)
-        .join(' '),
-    ).toBe(LEVEL_POLYGON);
+    expect(radarShape(later.html)).toEqual({
+      polygon: [LEVEL_POLYGON],
+      dots: LEVEL_POLYGON,
+    });
   });
 
   test('the printed CV counts up to that month too', () => {

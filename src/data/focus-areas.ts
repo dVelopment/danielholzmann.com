@@ -2,7 +2,7 @@ import { type Month, yearsSince } from '../lib/experience';
 import { buildMonth } from './build';
 
 /** How much weight a focus area gets today; set by hand, independent of experience. */
-export type FocusLevel = 1 | 2 | 3 | 4 | 5;
+type FocusLevel = 1 | 2 | 3 | 4 | 5;
 
 export interface FocusArea {
   name: string;
