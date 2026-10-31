@@ -1,0 +1,26 @@
+---
+/**
+ * Head styles for the skills section's two-way highlight, without JavaScript: hovering a list item or giving
+ * it keyboard focus (`:focus-visible`, so a mouse click doesn't leave it lit), or hovering a radar label,
+ * highlights every element of that skill. Elements share a skill through `data-skill="<index>"`
+ * (see Skills.astro): the list item, its radar label (`text`), spoke (`line`) and vertex dot (`circle`); the
+ * list item's years (`data-experience`) turn accent. Needs `:has()`; the list item's own
+ * hover/`:focus-visible` accent is styled in Skills.astro so it works without it.
+ */
+import { radarAxes } from "../data/skills";
+
+const active = radarAxes
+  .map(
+    (_, i) =>
+      `#skills:has(:is(li,text)[data-skill="${i}"]:is(:hover,:focus-visible)) [data-skill="${i}"]`,
+  )
+  .join(",");
+const css = [
+  `text:is(${active}){fill:var(--color-accent)}`,
+  `line:is(${active}){stroke:var(--color-accent)}`,
+  `circle:is(${active}){opacity:1}`,
+  `li:is(${active}) [data-experience]{color:var(--color-accent)}`,
+].join("");
+---
+
+<style is:inline set:html={css} />

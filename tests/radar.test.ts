@@ -8,7 +8,7 @@ const designAxes = [5, 5, 5, 2, 2, 2, 2, 5].map((value) => ({
 }));
 
 describe('radar', () => {
-  test('label anchors of the eight focus area axes land on the design coordinates', () => {
+  test('label anchors of the eight skill axes land on the design coordinates', () => {
     const labels = radar(
       (
         [

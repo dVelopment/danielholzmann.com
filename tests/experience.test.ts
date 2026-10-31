@@ -1,8 +1,9 @@
 import { describe, expect, test } from 'bun:test';
 import { careerYearsAt, jobs } from '../src/data/jobs';
-import { focusAreas } from '../src/data/focus-areas';
+import { skills } from '../src/data/skills';
 import {
   compareMonths,
+  decadesInWords,
   durationLabel,
   floorToDecade,
   formatMonth,
@@ -77,6 +78,20 @@ describe('floorToDecade', () => {
   });
 });
 
+describe('decadesInWords', () => {
+  test('spells whole decades out for the CV', () => {
+    expect(decadesInWords(10)).toBe('a decade');
+    expect(decadesInWords(20)).toBe('two decades');
+    expect(decadesInWords(30)).toBe('three decades');
+    expect(decadesInWords(50)).toBe('five decades');
+  });
+
+  test('refuses counts it has no words for, so the build fails instead of printing nonsense', () => {
+    for (const years of [0, 15, 60])
+      expect(() => decadesInWords(years)).toThrow(`no words for ${years} years`);
+  });
+});
+
 describe('durationLabel', () => {
   const duration = (company: string) => {
     const job = jobs.find((j) => j.company === company);
@@ -104,7 +119,7 @@ describe('durationLabel', () => {
 
 describe('content data', () => {
   test('every start and end month is valid and no job ends before it starts', () => {
-    for (const { start } of focusAreas)
+    for (const { start } of skills)
       expect(() => formatMonth(start)).not.toThrow();
     for (const { start, end } of jobs)
       expect(() => durationLabel(start, end ?? start)).not.toThrow();

@@ -1,26 +1,26 @@
 ---
 import { buildMonth } from "../data/build";
-import { DETAIL_CAP, focusAreas, radarAxes } from "../data/focus-areas";
+import { DETAIL_CAP, skills, radarAxes } from "../data/skills";
 import { yearsLabel, yearsSince } from "../lib/experience";
 import { points, radar, RADAR_CENTER, RADAR_RINGS } from "../lib/radar";
 import SectionHeading from "./SectionHeading.astro";
 import TextPair from "./TextPair.astro";
 
 const chart = radar(radarAxes.map(({ name, radarLabel, level }) => ({ label: radarLabel ?? [name], value: level })));
-const ariaLabel = `Focus area radar, skill level out of ${RADAR_RINGS}: ${radarAxes
+const ariaLabel = `Skill radar, skill level out of ${RADAR_RINGS}: ${radarAxes
   .map(({ name, level }) => `${name} ${level}`)
   .join(", ")}`;
-/** List rows in list order, each keeping its radar index, so data-focus-area pairs the row with its axis, plus its years and bar width (% of DETAIL_CAP years, full from there). */
-const rows = focusAreas.map((area) => {
-  const years = yearsSince(area.start, buildMonth);
-  return { ...area, index: radarAxes.indexOf(area), years, bar: (Math.min(years, DETAIL_CAP) * 100) / DETAIL_CAP };
+/** List rows in list order, each keeping its radar index, so data-skill pairs the row with its axis, plus its years and bar width (% of DETAIL_CAP years, full from there). */
+const rows = skills.map((skill) => {
+  const years = yearsSince(skill.start, buildMonth);
+  return { ...skill, index: radarAxes.indexOf(skill), years, bar: (Math.min(years, DETAIL_CAP) * 100) / DETAIL_CAP };
 });
 ---
 
-{/* data-focus-area ties each focus area's list item, radar label, spoke and dot together for FocusAreasHighlight.astro. */}
-<section id="focus-areas" aria-labelledby="focus-areas-h" class="flex flex-col gap-5 print:gap-2">
+{/* data-skill ties each skill's list item, radar label, spoke and dot together for SkillsHighlight.astro. */}
+<section id="skills" aria-labelledby="skills-h" class="flex flex-col gap-5 print:gap-2">
   <div class="flex flex-wrap items-baseline justify-between gap-3">
-    <SectionHeading id="focus-areas-h"><TextPair screen="focus-areas --level" print="focus areas" /></SectionHeading>
+    <SectionHeading id="skills-h"><TextPair screen="skills --level" print="skills" /></SectionHeading>
     <p class="text-xs text-muted print:hidden">radar: skill level · 1–{RADAR_RINGS} · bars: years of experience</p>
   </div>
   <div
@@ -34,7 +34,7 @@ const rows = focusAreas.map((area) => {
     >
       <g stroke-width="1" class="fill-none stroke-line">
         {chart.rings.map((ring, k) => <polygon points={points(ring)} class:list={{ "stroke-line-strong": k === RADAR_RINGS - 1 }} />)}
-        {chart.spokes.map(({ x, y }, i) => <line x1={RADAR_CENTER} y1={RADAR_CENTER} x2={x} y2={y} data-focus-area={i} />)}
+        {chart.spokes.map(({ x, y }, i) => <line x1={RADAR_CENTER} y1={RADAR_CENTER} x2={x} y2={y} data-skill={i} />)}
       </g>
       <polygon
         points={points(chart.vertices)}
@@ -43,14 +43,14 @@ const rows = focusAreas.map((area) => {
         stroke-linejoin="round"
         class="fill-accent stroke-accent"
       />
-      {chart.vertices.map(({ x, y }, i) => <circle cx={x} cy={y} r="4" data-focus-area={i} class="fill-accent opacity-0" />)}
+      {chart.vertices.map(({ x, y }, i) => <circle cx={x} cy={y} r="4" data-skill={i} class="fill-accent opacity-0" />)}
       <g font-size="11" class="fill-muted">
         {chart.ringLabels.map(({ x, y, text }) => <text x={x} y={y}>{text}</text>)}
       </g>
       <g font-size="15" class="fill-fg">
         {
           chart.labels.map(({ x, anchor, lines }, i) => (
-            <text x={x} text-anchor={anchor} data-focus-area={i}>
+            <text x={x} text-anchor={anchor} data-skill={i}>
               {lines.map(({ y, text }) => <tspan x={x} y={y}>{text}</tspan>)}
             </text>
           ))
@@ -61,7 +61,7 @@ const rows = focusAreas.map((area) => {
     <ul role="list" class="flex flex-[2_1_280px] flex-col gap-3.5 print:flex-none print:gap-[5px]">
       {
         rows.map(({ name, cvName, level, years, bar, index }) => (
-          <li tabindex="0" data-focus-area={index} class="group flex flex-col gap-1.5">
+          <li tabindex="0" data-skill={index} class="group flex flex-col gap-1.5">
             <div class="flex justify-between gap-3 text-[13px] print:gap-2">
               {/* One flex item, whichever medium's name shows; the color is the body's (fg, ink in print). */}
               <span>
@@ -69,7 +69,7 @@ const rows = focusAreas.map((area) => {
               </span>
               {/*
                 Screen readers hear the skill level from the sr-only text, then the experience as shown. The print color
-                is `!important`: it must beat the hover/focus accent, including FocusAreasHighlight.astro's unlayered
+                is `!important`: it must beat the hover/focus accent, including SkillsHighlight.astro's unlayered
                 `:has()` rule, so a row still hovered or focused when the page prints keeps the CV's ink.
               */}
               <span class="sr-only print:hidden">{` skill level ${level} of ${RADAR_RINGS}, `}</span>

@@ -5,8 +5,8 @@ import Contact from "../components/Contact.astro";
 import CvContact from "../components/CvContact.astro";
 import CvEducation from "../components/CvEducation.astro";
 import CvLanguages from "../components/CvLanguages.astro";
-import FocusAreas from "../components/FocusAreas.astro";
-import FocusAreasHighlight from "../components/FocusAreasHighlight.astro";
+import Skills from "../components/Skills.astro";
+import SkillsHighlight from "../components/SkillsHighlight.astro";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import Hero from "../components/Hero.astro";
@@ -15,13 +15,13 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout>
-  <FocusAreasHighlight slot="head" />
+  <SkillsHighlight slot="head" />
   <Header />
   {/*
     The wrapper divs are `display: contents` on screen, so DOM, visual and Tab order stay one. In print `<main>`
     turns `display: contents` instead, so the hero (restyled as the CV header) and the outer div sit in the
     page's column with the footer; the outer div is the two-column row, the inner divs its aside (contact,
-    focus areas, education, languages) and main column (profile, experience).
+    skills, education, languages) and main column (profile, experience).
     The Cv* components are print-only.
   */}
   <main id="main" class="print:contents">
@@ -29,7 +29,7 @@ import Layout from "../layouts/Layout.astro";
     <div class="contents print:flex print:min-h-0 print:flex-1 print:gap-9">
       <div class="contents print:flex print:w-[206px] print:flex-none print:flex-col print:gap-[26px]">
         <CvContact />
-        <FocusAreas />
+        <Skills />
         <CvEducation />
         <CvLanguages />
       </div>
